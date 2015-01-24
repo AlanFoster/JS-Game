@@ -1,3 +1,3 @@
 exports.world = {
     entities: {}
-}
+};

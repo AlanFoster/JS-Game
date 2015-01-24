@@ -22,12 +22,6 @@ gulp.task('haml', function () {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task('connect', function () {
-    connect.server({
-        root: 'dist/',
-        port: 8000
-    });
-});
 
 gulp.task('test', function() {
     gulp.src('spec/**/*_spec.js')
@@ -37,7 +31,7 @@ gulp.task('test', function() {
 gulp.task('javascript', ['browserify', 'bower_components']);
 gulp.task('assets', ['javascript']);
 gulp.task('views', ['haml']);
-gulp.task('default', ['assets', 'views', 'connect']);
+gulp.task('default', ['assets', 'views']);
 
 gulp.task('watch', function () {
     gulp.watch('app/**/*.*', ['default']);
