@@ -1,0 +1,84 @@
+<script>
+var Entity = (function() {
+    var Entity = function(id) {
+        this.id = id;
+        this.components = {};
+    }
+
+    Entity.prototype = {
+        addComponent: function(component) {
+            this.components[component.tag] = component
+        },
+        toString: function() {
+            return JSON.stringify({
+                "Entity": {
+                    id: this.id,
+                    components: this.components
+                }
+            })
+        }
+    };
+
+    return Entity;
+})();
+
+var IdGenerator = (function() {
+    return function() {
+        var counter = 0;
+        return {
+            next: function() {
+                return ++counter
+            }
+        }
+    }
+})();
+
+var EntityManager = (function() {
+    var EntityManager = function(Entity, idGenerator) {
+        this.Entity = Entity;
+        this.idGenerator = idGenerator;
+
+        this.entities = []
+    };
+
+    EntityManager.prototype = {
+        createEntity: function() {
+            var entity = new this.Entity(this.idGenerator.next());
+            this.entities.push(entity)
+
+            return entity;
+        },
+        removeEntity: function(entity) {
+            delete entities[entity]
+        },
+        addComponent: function(entity, component) {
+
+        }
+    };
+
+    return EntityManager;
+})();
+
+var Components = {};
+Components.Health = (function() {
+    var Component = function(health) {
+        this.health = health;
+    };
+
+    Component.prototype = {
+        tag: 'health'
+    };
+
+    return Component;
+})()
+
+var world = {
+    entityManager: new EntityManager(Entity, new IdGenerator())
+}
+
+var entity = world.entityManager.createEntity()
+entity.addComponent(new Components.Health(100))
+alert(entity)
+
+</script>
+
