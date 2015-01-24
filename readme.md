@@ -19,3 +19,12 @@ Open new Tab
 ```
 gulp watch
 ```
+
+
+Testing
+=======
+
+```
+npm install -g karma
+gulp test
+```

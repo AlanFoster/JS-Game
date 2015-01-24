@@ -1,9 +1,7 @@
 var gulp = require('gulp');
 var browserify = require('gulp-browserify');
-var concat = require('gulp-concat');
-var connect = require('gulp-connect');
 var haml = require('gulp-haml');
-var jasmine = require('gulp-jasmine');
+var karma = require('karma').server;
 
 gulp.task('browserify', function () {
     gulp.src('app/assets/js/main.js')
@@ -23,10 +21,11 @@ gulp.task('haml', function () {
 });
 
 
-gulp.task('test', function() {
-    gulp.src('spec/**/*_spec.js')
-        .pipe(jasmine({ verbose: true, includeStackTrace: false }))
-})
+gulp.task('test', function(done) {
+    karma.start({
+        configFile: __dirname + '/karma.conf.js'
+    }, done)
+});
 
 gulp.task('javascript', ['browserify', 'bower_components']);
 gulp.task('assets', ['javascript']);
