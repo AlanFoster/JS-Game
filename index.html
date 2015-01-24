@@ -1,3 +1,4 @@
+<script src='http://underscorejs.org/underscore.js'></script>
 <script>
 var Entity = (function() {
     var Entity = function(id) {
@@ -7,7 +8,11 @@ var Entity = (function() {
 
     Entity.prototype = {
         addComponent: function(component) {
-            this.components[component.tag] = component
+            this.components[component.tag] = component;
+            return this;
+        },
+        component: function(tag) {
+            return this.components[tag];
         },
         toString: function() {
             return JSON.stringify({
@@ -15,7 +20,7 @@ var Entity = (function() {
                     id: this.id,
                     components: this.components
                 }
-            })
+            }, null, 4)
         }
     };
 
@@ -50,9 +55,6 @@ var EntityManager = (function() {
         },
         removeEntity: function(entity) {
             delete entities[entity]
-        },
-        addComponent: function(entity, component) {
-
         }
     };
 
@@ -60,25 +62,189 @@ var EntityManager = (function() {
 })();
 
 var Components = {};
-Components.Health = (function() {
-    var Component = function(health) {
-        this.health = health;
+var createComponent = (function(tag, properties) {
+    var Component = function(instance_properties) {
+        _.each(properties, function(fallback, property) {
+            this[property] = instance_properties[property] || fallback
+        }, this)
     };
 
     Component.prototype = {
-        tag: 'health'
+        tag: tag,
+        toString: function() {
+            return JSON.stringify(this, null, 4)
+        }
+    }
+
+    return Component;  
+})
+
+Components.Health = createComponent('health', {
+    health: 100
+})
+
+Components.Position = createComponent('position', {
+    x: 0,
+    y: 0
+});
+
+Components.Rendered = createComponent('rendered', {
+    color: 'red'
+})
+
+Components.Velocity = createComponent('velocity', {
+    x: 0,
+    y: 0
+})
+
+var SystemManager = (function() {
+    var SystemManager = function(systems) {
+        systems = systems || [];
+        this.systems = systems;
+    }
+
+    SystemManager.prototype = {
+        register: function(systems) {
+            this.systems = this.systems.concat(systems)
+        },
+        update: function(entities) {
+            this.systems.forEach(function(system) {
+                system.update(entities);
+            })
+        }
+    }
+
+    return SystemManager;
+})()
+
+var Systems = {};
+var extract = function(entities) {
+    return {
+        withComponents: function(tags) {
+            var valid = _.reduce(entities, function(result, entity) {
+                var components = _.chain(tags)
+                                   .map(function(tag) { return entity.component(tag) })
+                                   .compact()
+                                   .value()
+
+                var hasAllComponents = _.size(components) == _.size(tags);
+                
+                if (hasAllComponents) {
+                    var componentMap = _.object(tags, components)
+                     
+                    result.push({ entity: entity, components: componentMap })
+                }
+
+                return result;
+            }, [])
+
+            return {
+                process: function(callback) {
+                    valid.forEach(function(data) {
+                        callback(data.entity, data.components)
+                    })
+                }
+            }
+        }
+    }
+}
+
+Systems.Render = (function() {
+    var Render = function(canvas) {
+        this.canvas = canvas;
     };
 
-    return Component;
+    Render.prototype = {
+        update: function(entities) {
+            extract(entities).withComponents(this.components)
+                             .process(this.process)
+
+        },
+        components: ['position', 'rendered'],
+        process: function(entity, components) {
+            var position = components.position;
+            var rendered = components.rendered;
+
+            window.document.body.innerHTML = 'Drawing entity : ' + ([~~position.x, ~~position.y, rendered.color].join(', '))
+        }   
+    }
+    
+    return Render;
+})();
+
+Systems.Movement = (function() {
+    var System = function() {
+
+    };
+
+    System.prototype = {
+        update: function(entities) {
+            extract(entities).withComponents(this.components)
+                             .process(this.process)
+
+        },
+        components: ['position', 'velocity'],
+        process: function(entity, components) {
+            var position = components.position;
+            var velocity = components.velocity;
+
+            position.x += velocity.x;
+            position.y += velocity.y;
+        }
+    };
+
+    return System;
 })()
 
 var world = {
-    entityManager: new EntityManager(Entity, new IdGenerator())
+    entityManager: new EntityManager(Entity, new IdGenerator()),
+    systemManager: new SystemManager()
 }
 
+world.systemManager.register([
+   new Systems.Movement(),
+   new Systems.Render()
+])
+
 var entity = world.entityManager.createEntity()
-entity.addComponent(new Components.Health(100))
-alert(entity)
+                                .addComponent(new Components.Health({ health: 100 } ))
+                                .addComponent(new Components.Position({ x: 50, y: 50 }))
+                                .addComponent(new Components.Rendered({ color: 'red' }))
+                                .addComponent(new Components.Velocity({ x: 0.1, y: 0.3 }))
+
+var WorldManager = (function() {
+    var WorldManager = (function() {
+        this.world = world;
+    });
+
+    WorldManager.prototype = {
+        update: function() {
+            var world = this.world;
+            var entities = world.entityManager.entities;
+            world.systemManager.update(entities);
+        },
+    };
+
+    return WorldManager;
+})();
+
+var worldManager = new WorldManager(world);
+
+var runLater = (function() {
+    var fallback = function(callback) {
+        var targetFPS = 2;
+        return window.setTimeout(callback, 1000 / targetFPS);
+    };
+    
+    return window.requestAnimationFrame || fallback;
+})();
+
+window.onload = function() {
+    (function gameLoop() {
+        runLater(gameLoop);
+        worldManager.update();
+    })()
+}
 
 </script>
 
