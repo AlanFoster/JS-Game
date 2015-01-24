@@ -3,6 +3,7 @@ var browserify = require('gulp-browserify');
 var concat = require('gulp-concat');
 var connect = require('gulp-connect');
 var haml = require('gulp-haml');
+var jasmine = require('gulp-jasmine');
 
 gulp.task('browserify', function () {
     gulp.src('app/assets/js/main.js')
@@ -27,6 +28,11 @@ gulp.task('connect', function () {
         port: 8000
     });
 });
+
+gulp.task('test', function() {
+    gulp.src('spec/**/*_spec.js')
+        .pipe(jasmine({ verbose: true, includeStackTrace: false }))
+})
 
 gulp.task('javascript', ['browserify', 'bower_components']);
 gulp.task('assets', ['javascript']);

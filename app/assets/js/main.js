@@ -1,1 +1,3 @@
-console.log('hello world');
+exports.world = {
+    entities: {}
+}
