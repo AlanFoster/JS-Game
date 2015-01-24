@@ -13,6 +13,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+        'spec/spec_helper.js',
         'spec/**/*.js'
     ],
 
@@ -32,7 +33,7 @@ module.exports = function(config) {
     reporters: ['progress'],
 
     // web server port
-    port: 9002,
+    port: 9000,
 
     // enable / disable colors in the output (reporters and logs)
     colors: true,
