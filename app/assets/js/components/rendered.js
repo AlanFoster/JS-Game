@@ -1,18 +1,7 @@
-var Rendered = (function() {
-    var Component = function(instanceProperties) {
-        this.color = instanceProperties.color || 'red';
-        this.width = instanceProperties.width || 100;
-        this.height = instanceProperties.height || 100;
-    };
+var Components = require('./components');
 
-    Component.prototype = {
-        tag: 'rendered',
-        toString: function() {
-            return JSON.stringify(this, undefined, 4);
-        }
-    };
-
-    return Component;
-})();
-
-exports.Rendered = Rendered;
+exports.Rendered = Components.create('rendered', {
+    color: 'red',
+    width: 100,
+    height: 100
+});

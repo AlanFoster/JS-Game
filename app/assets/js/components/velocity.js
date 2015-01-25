@@ -1,17 +1,6 @@
-var Velocity = (function() {
-    var Component = function(instanceProperties) {
-        this.x = instanceProperties.x || 0;
-        this.y = instanceProperties.y || 0;
-    };
+var Components = require('./components');
 
-    Component.prototype = {
-        tag: 'velocity',
-        toString: function() {
-            return JSON.stringify(this, undefined, 4);
-        }
-    };
-
-    return Component;
-})();
-
-exports.Velocity = Velocity;
+exports.Velocity = Components.create('velocity', {
+    x: 0,
+    y: 0
+});
