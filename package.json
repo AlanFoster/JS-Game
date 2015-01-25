@@ -26,5 +26,8 @@
     "karma-browserify": "^3.0.0",
     "karma-chrome-launcher": "^0.1.7",
     "karma-jasmine": "^0.3.5"
+  },
+  "dependencies": {
+    "underscore": "^1.7.0"
   }
 }

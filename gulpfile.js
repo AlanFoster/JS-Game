@@ -40,7 +40,7 @@ gulp.task('test', function(done) {
     }, done)
 });
 
-gulp.task('javascript', ['browserify', 'bower_components']);
+gulp.task('javascript', ['bower_components', 'browserify']);
 gulp.task('assets', ['javascript']);
 gulp.task('views', ['haml']);
 gulp.task('default', ['assets', 'views']);
