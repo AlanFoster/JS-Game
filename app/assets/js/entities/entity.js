@@ -14,6 +14,9 @@ var Entity = (function() {
         },
         removeComponent: function(tag) {
             delete this.components[tag];
+        },
+        toString: function() {
+            return JSON.stringify(this, null, 4)
         }
     };
 
