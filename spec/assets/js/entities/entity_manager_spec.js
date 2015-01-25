@@ -1,5 +1,5 @@
-var subject = require('./../../../../app/assets/js/entities/entity_manager').EntityManager;
-var IdGenerator = require('./../../../../app/assets/js/generators/idGenerator').Generator;
+var subject = require('./../../../../app/assets/js/entities/entity_manager');
+var IdGenerator = require('./../../../../app/assets/js/generators/idGenerator');
 
 describe('Entity', function() {
     it('exists', function() {

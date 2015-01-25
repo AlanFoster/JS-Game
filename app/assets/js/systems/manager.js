@@ -20,4 +20,4 @@ var Manager = (function() {
     return Manager;
 })();
 
-exports.Manager = Manager;
+module.exports = Manager;

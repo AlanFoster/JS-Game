@@ -10,4 +10,4 @@ describe('main', function() {
             expect(subject.world.entities).toEqual([]);
         });
     });
-})
+});

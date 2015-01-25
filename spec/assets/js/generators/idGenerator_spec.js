@@ -1,4 +1,4 @@
-var subject = require('./../../../../app/assets/js/generators/idGenerator').Generator;
+var subject = require('./../../../../app/assets/js/generators/idGenerator');
 
 describe('Generator', function() {
     it('exists', function() {

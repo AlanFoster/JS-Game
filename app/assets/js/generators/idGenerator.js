@@ -7,4 +7,4 @@ var SequentialIdGenerator = function() {
     };
 };
 
-exports.Generator = SequentialIdGenerator;
+module.exports = SequentialIdGenerator;

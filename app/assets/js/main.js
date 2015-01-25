@@ -1,14 +1,14 @@
 var _ = require('underscore');
-var Entity = require('./entities/entity').Entity;
-var EntityManager = require('./entities/entity_manager').EntityManager;
-var IdGenerator = require('./generators/idGenerator').Generator;
-var SystemManager = require('./systems/manager').Manager;
-var MovementSystem = require('./systems/movement').Movement;
-var RenderSystem = require('./systems/render').Render;
+var Entity = require('./entities/entity');
+var EntityManager = require('./entities/entity_manager');
+var IdGenerator = require('./generators/idGenerator');
+var SystemManager = require('./systems/manager');
+var MovementSystem = require('./systems/movement');
+var RenderSystem = require('./systems/render');
 
-var Rendered = require('./components/rendered').Rendered;
-var Velocity = require('./components/velocity').Velocity;
-var Location = require('./components/location').Location;
+var Rendered = require('./components/rendered');
+var Velocity = require('./components/velocity');
+var Location = require('./components/location');
 
 var entityManager = new EntityManager(Entity, new IdGenerator());
 var systemManager = new SystemManager([
@@ -50,6 +50,6 @@ window.onload = function() {
     })
 };
 
-exports.world = {
+module.exports.world = {
     entities: []
 };

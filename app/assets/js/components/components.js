@@ -7,7 +7,7 @@ var safeAccess = function(hash) {
     };
 };
 
-exports.create = function(tag, properties) {
+module.exports.create = function(tag, properties) {
     var Component = function(instanceProperties) {
         instanceProperties = instanceProperties || {};
 

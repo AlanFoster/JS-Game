@@ -1,4 +1,4 @@
-var subject = require('./../../../../app/assets/js/components/location').Location;
+var subject = require('./../../../../app/assets/js/components/location');
 
 describe('location component', function() {
     it('exists', function() {

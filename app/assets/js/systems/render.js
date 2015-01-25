@@ -22,4 +22,4 @@ var Render = (function() {
     return System;
 })();
 
-exports.Render = Render;
+module.exports = Render;

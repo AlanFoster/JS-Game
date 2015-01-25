@@ -23,4 +23,4 @@ var Entity = (function() {
     return Entity;
 })();
 
-exports.Entity = Entity;
+module.exports = Entity;

@@ -8,7 +8,7 @@ var safeAccess = function(hash) {
     };
 };
 
-exports.create = function(tag, properties) {
+module.exports.create = function(tag, properties) {
     var Component = function(instanceProperties) {
         instanceProperties = instanceProperties || {};
 
@@ -29,14 +29,14 @@ exports.create = function(tag, properties) {
 },{"underscore":12}],2:[function(require,module,exports){
 var Components = require('./components');
 
-exports.Location = Components.create('location', {
+module.exports = Components.create('location', {
     x: 0,
     y: 0
 });
 },{"./components":1}],3:[function(require,module,exports){
 var Components = require('./components');
 
-exports.Rendered = Components.create('rendered', {
+module.exports = Components.create('rendered', {
     color: 'red',
     width: 100,
     height: 100
@@ -44,7 +44,7 @@ exports.Rendered = Components.create('rendered', {
 },{"./components":1}],4:[function(require,module,exports){
 var Components = require('./components');
 
-exports.Velocity = Components.create('velocity', {
+module.exports = Components.create('velocity', {
     x: 0,
     y: 0
 });
@@ -74,7 +74,7 @@ var Entity = (function() {
     return Entity;
 })();
 
-exports.Entity = Entity;
+module.exports = Entity;
 
 },{}],6:[function(require,module,exports){
 var EntityManager = (function () {
@@ -95,19 +95,19 @@ var EntityManager = (function () {
     return EntityManager;
 })();
 
-exports.EntityManager = EntityManager;
+module.exports = EntityManager;
 },{}],7:[function(require,module,exports){
 var _ = require('underscore');
-var Entity = require('./entities/entity').Entity;
-var EntityManager = require('./entities/entity_manager').EntityManager;
-var IdGenerator = require('./generators/idGenerator').Generator;
-var SystemManager = require('./systems/manager').Manager;
-var MovementSystem = require('./systems/movement').Movement;
-var RenderSystem = require('./systems/render').Render;
+var Entity = require('./entities/entity');
+var EntityManager = require('./entities/entity_manager');
+var IdGenerator = require('./generators/idGenerator');
+var SystemManager = require('./systems/manager');
+var MovementSystem = require('./systems/movement');
+var RenderSystem = require('./systems/render');
 
-var Rendered = require('./components/rendered').Rendered;
-var Velocity = require('./components/velocity').Velocity;
-var Location = require('./components/location').Location;
+var Rendered = require('./components/rendered');
+var Velocity = require('./components/velocity');
+var Location = require('./components/location');
 
 var entityManager = new EntityManager(Entity, new IdGenerator());
 var systemManager = new SystemManager([
@@ -149,7 +149,7 @@ window.onload = function() {
     })
 };
 
-exports.world = {
+module.exports.world = {
     entities: []
 };
 
@@ -163,7 +163,7 @@ var SequentialIdGenerator = function() {
     };
 };
 
-exports.Generator = SequentialIdGenerator;
+module.exports = SequentialIdGenerator;
 },{}],9:[function(require,module,exports){
 var _ = require('underscore');
 
@@ -187,7 +187,7 @@ var Manager = (function() {
     return Manager;
 })();
 
-exports.Manager = Manager;
+module.exports = Manager;
 },{"underscore":12}],10:[function(require,module,exports){
 var Movement = (function() {
     var System = function() {
@@ -217,7 +217,7 @@ var Movement = (function() {
     return System;
 })();
 
-exports.Movement = Movement;
+module.exports = Movement;
 },{}],11:[function(require,module,exports){
 var Render = (function() {
     var System = function() {
@@ -243,7 +243,7 @@ var Render = (function() {
     return System;
 })();
 
-exports.Render = Render;
+module.exports = Render;
 },{}],12:[function(require,module,exports){
 //     Underscore.js 1.7.0
 //     http://underscorejs.org

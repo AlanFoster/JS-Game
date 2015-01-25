@@ -16,4 +16,4 @@ var EntityManager = (function () {
     return EntityManager;
 })();
 
-exports.EntityManager = EntityManager;
+module.exports = EntityManager;

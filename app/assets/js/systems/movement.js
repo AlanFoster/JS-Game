@@ -26,4 +26,4 @@ var Movement = (function() {
     return System;
 })();
 
-exports.Movement = Movement;
+module.exports = Movement;

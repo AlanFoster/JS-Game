@@ -1,7 +1,7 @@
-var subject = require('./../../../../app/assets/js/systems/render').Render;
-var Entity = require('./../../../../app/assets/js/entities/entity').Entity;
-var Location = require('./../../../../app/assets/js/components/location').Location;
-var Rendered = require('./../../../../app/assets/js/components/rendered').Rendered;
+var subject = require('./../../../../app/assets/js/systems/render');
+var Entity = require('./../../../../app/assets/js/entities/entity');
+var Location = require('./../../../../app/assets/js/components/location');
+var Rendered = require('./../../../../app/assets/js/components/rendered');
 
 describe('Movement System', function() {
     it('exists', function() {

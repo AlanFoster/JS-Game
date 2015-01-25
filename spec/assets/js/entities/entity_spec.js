@@ -1,4 +1,4 @@
-var subject = require('./../../../../app/assets/js/entities/entity').Entity;
+var subject = require('./../../../../app/assets/js/entities/entity');
 
 describe('Entity', function() {
     it('exists', function() {
