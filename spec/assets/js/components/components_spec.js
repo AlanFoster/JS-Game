@@ -8,6 +8,22 @@ describe('location component', function() {
     describe('#create', function() {
         var component = subject.create('tag_name', { x: 10, color: undefined });
 
+        context('no argument provided', function() {
+            var instance = new component();
+
+            it('has a tag name', function() {
+                expect(instance.tag).toEqual('tag_name');
+            });
+
+            it('has a default x value', function() {
+                expect(instance.x).toEqual(10);
+            });
+
+            it('has a default color value', function() {
+                expect(instance.color).toBeUndefined();
+            })
+        });
+
         context('no instance variables provided', function() {
             var instance = new component({});
 

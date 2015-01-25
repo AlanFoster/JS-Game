@@ -9,6 +9,8 @@ var safeAccess = function(hash) {
 
 exports.create = function(tag, properties) {
     var Component = function(instanceProperties) {
+        instanceProperties = instanceProperties || {};
+
         _.each(properties, function(fallback, property) {
             this[property] = safeAccess(instanceProperties)(property, fallback)
         }, this)
