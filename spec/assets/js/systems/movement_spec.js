@@ -64,25 +64,27 @@ describe('Movement System', function() {
 
     describe('#process', function() {
         var instance = new subject();
-        var testEnv = { };
+        var entity = undefined;
 
         beforeEach(function() {
             var velocity = new Velocity({ x: 2, y: 3 });
             var location = new Location({ x: 0, y: 0 });
-            var entity =  new Entity('id').addComponent(location)
-                                          .addComponent(velocity);
+            entity = new Entity('id').addComponent(location)
+                                     .addComponent(velocity);
 
-            // Provide access to the entity during our tests
-            testEnv.entity = entity;
             instance.process(entity, { velocity: velocity, location: location })
         });
 
+        afterEach(function() {
+            entity = undefined;
+        });
+
         it('increases the x position by the y velocity', function() {
-            expect(testEnv.entity.getComponent('location').x).toEqual(2);
+            expect(entity.getComponent('location').x).toEqual(2);
         });
 
         it('increases the y position by the y velocity', function() {
-            expect(testEnv.entity.getComponent('location').y).toEqual(3);
+            expect(entity.getComponent('location').y).toEqual(3);
         });
     });
 });
