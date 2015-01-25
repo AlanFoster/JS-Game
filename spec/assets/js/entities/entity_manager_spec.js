@@ -1,4 +1,5 @@
 var subject = require('./../../../../app/assets/js/entities/entity_manager').EntityManager;
+var IdGenerator = require('./../../../../app/assets/js/generators/idGenerator').Generator;
 
 describe('Entity', function() {
     it('exists', function() {
@@ -6,28 +7,25 @@ describe('Entity', function() {
     });
 
     var createEntityManager = function() {
-        var EntitySpy = function(id) { this.id = id; };
+        var MockEntity = function(id) { this.id = id; };
+        var idGenerator = new IdGenerator();
 
-        // TODO Write spy with multiple return values
-        var IdGeneratorSpy = {
-            next: (function() {
-                var count = 0;
-                return function() {
-                    count++;
-                    return 'generated id ' + count;
-                }
-            })()
-        };
-
-        return new subject(EntitySpy, IdGeneratorSpy);
+        return new subject(MockEntity, idGenerator);
     };
 
     describe('#createEntity', function() {
         var instance = createEntityManager();
 
         it('returns an entity', function() {
-            expect(instance.createEntity().id).toBe('generated id 1')
+            expect(instance.createEntity().id).toBe(1)
         });
+
+        it('returns unique identities', function() {
+            var first = instance.createEntity();
+            var second = instance.createEntity();
+
+            expect(first.id).not.toEqual(second.id)
+        })
     });
 
     describe('#entities', function(){
