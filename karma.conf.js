@@ -54,7 +54,8 @@ module.exports = function(config) {
     singleRun: false,
 
     browserify: {
-        debug: true
+        debug: true,
+        paths: ['./app/assets/js']
     }
   });
 };

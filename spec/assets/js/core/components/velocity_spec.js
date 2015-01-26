@@ -1,4 +1,4 @@
-var subject = require('./../../../../../app/assets/js/core/components/velocity');
+var subject = require('core/components/velocity');
 
 describe('velocity component', function() {
     it('exists', function() {

@@ -1,4 +1,4 @@
-var subject = require('./../../../../app/assets/js/game/systems');
+var subject = require('game/systems');
 
 describe('Systems Main', function () {
 

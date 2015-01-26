@@ -1,4 +1,4 @@
-var subject = require('./../../../../app/assets/js/game/components');
+var subject = require('game/components');
 
 describe('Components Main', function () {
     it('exists', function () {

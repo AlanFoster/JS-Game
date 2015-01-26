@@ -8,7 +8,6 @@ var karma = require('karma').server;
 var handleError = function(error) {
     var errorContent = escape(error.message.replace(/'|"/g, "\'"))
 
-
     gulp.src('app/assets/js/error.js')
         .pipe(replace("#{ERROR}", errorContent))
         .pipe(rename('main.js'))
@@ -17,7 +16,7 @@ var handleError = function(error) {
 
 gulp.task('browserify', function () {
     gulp.src('app/assets/js/main.js')
-        .pipe(browserify())
+        .pipe(browserify({ debug: true, paths: ['app/assets/js'] }))
         .on('error', handleError)
         .pipe(gulp.dest('dist/js'));
 });

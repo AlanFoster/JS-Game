@@ -1,4 +1,4 @@
-var subject = require('./../../../../app/assets/js/game/entities');
+var subject = require('game/entities');
 
 describe('Entities Main', function () {
 

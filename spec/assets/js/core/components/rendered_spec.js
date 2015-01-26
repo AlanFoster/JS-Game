@@ -1,4 +1,4 @@
-var subject = require('./../../../../../app/assets/js/core/components/rendered');
+var subject = require('core/components/rendered');
 
 describe('rendered component', function() {
     it('exists', function() {

@@ -1,4 +1,4 @@
-var subject = require('./../../../../../app/assets/js/core/systems/manager');
+var subject = require('core/systems/manager');
 
 describe('System Manager', function () {
 

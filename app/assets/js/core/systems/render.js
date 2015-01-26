@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 var Render = (function () {
     var System = function (target) {
         this.target = target;

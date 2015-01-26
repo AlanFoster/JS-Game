@@ -1,4 +1,4 @@
-var subject = require('./../../../app/assets/js/main');
+var subject = require('main');
 
 describe('main', function() {
     it('exists', function() {

@@ -1,4 +1,4 @@
-var subject = require('./../../../../../app/assets/js/core/components/components');
+var subject = require('core/components/components');
 
 describe('components helper', function() {
     it('exists', function() {

@@ -1,7 +1,5 @@
-var _ = require('underscore');
-
 module.exports = {
-    Location: require('./../core/components/location'),
-    Velocity: require('./../core/components/velocity'),
-    Rendered: require('./../core/components/rendered')
+    Location: require('core/components/location'),
+    Velocity: require('core/components/velocity'),
+    Rendered: require('core/components/rendered')
 };
