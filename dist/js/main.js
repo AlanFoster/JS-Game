@@ -110,11 +110,11 @@ module.exports = SequentialIdGenerator;
 },{}],8:[function(require,module,exports){
 var runLater = (function() {
     var fallback = function(callback) {
-        var targetFPS = 2;
+        var targetFPS = 60;
         return window.setTimeout(callback, 1000 / targetFPS);
     };
 
-    return fallback;
+    return window.requestAnimationFrame || fallback;
 })();
 
 var loopEndlessly = function(callback) {
@@ -182,24 +182,58 @@ var Movement = (function() {
 
 module.exports = Movement;
 },{}],11:[function(require,module,exports){
-var Render = (function() {
-    var System = function() {
-
+var Render = (function () {
+    var System = function (target) {
+        this.target = target;
+        this.width = 600;
+        this.height = 500;
+        this.context = undefined;
     };
 
     System.prototype = {
-        update: function(entities) {
-            var process = this.process;
-            entities.forEach(function(entity) {
-                var rendered = entity.getComponent('rendered');
-                if (!rendered) return;
+        setUp: function () {
+            if (!this.target) return;
 
-                process(entity, { rendered: rendered })
+            var canvas = document.createElement('canvas');
+            canvas.width = this.width;
+            canvas.height = this.height;
+
+            this.context = canvas.getContext('2d');
+
+            this.target.innerHTML = '';
+            this.target.appendChild(canvas);
+
+            return this;
+        },
+        update: function (entities) {
+            if (!this.context) return;
+
+            this.preprocess(entities);
+
+            var process = this.process.bind(this);
+            entities.forEach(function (entity) {
+                var rendered = entity.getComponent('rendered');
+                var location = entity.getComponent('location');
+                if (!rendered || !location) return;
+
+                process(entity, { rendered: rendered, location: location })
             })
         },
-        process: function(entity, components) {
-            // TODO
-            window.document.body.innerHTML = entity.toString();
+        preprocess: function(entities) {
+            var context = this.context;
+
+            context.fillStyle = '#000';
+            context.fillRect(0, 0, this.width, this.height);
+        },
+        process: function (entity, components) {
+            var rendered = components.rendered;
+            var location = components.location;
+
+            var context = this.context;
+
+            context.fillStyle = rendered.color;
+
+            context.fillRect(location.x, location.y, rendered.width, rendered.height);
         }
     };
 
@@ -208,22 +242,23 @@ var Render = (function() {
 
 module.exports = Render;
 },{}],12:[function(require,module,exports){
-var _ = require('underscore');
-var entityManager = require('./game/entities').entityManager;
-var systemManager = require('./game/systems').systemManager;
-var Components = require('./game/components');
-var runner = require('./core/runner');
-
-var entity = entityManager.createEntity()
-                          .addComponent(new Components.Rendered())
-                          .addComponent(new Components.Velocity({ x: 1, y: 3 }))
-                          .addComponent(new Components.Location());
-
 window.onload = function() {
+    var _ = require('underscore');
+    var entityManager = require('./game/entities').entityManager;
+    var systemManager = require('./game/systems').create(document.body);
+    var Components = require('./game/components');
+    var runner = require('./core/runner');
+
+    var entity = entityManager.createEntity()
+                              .addComponent(new Components.Rendered())
+                              .addComponent(new Components.Velocity({ x: 1, y: 3 }))
+                              .addComponent(new Components.Location());
+
     runner.queue(function() {
         systemManager.update(entityManager.entities);
     })
 };
+
 },{"./core/runner":8,"./game/components":13,"./game/entities":14,"./game/systems":15,"underscore":16}],13:[function(require,module,exports){
 var _ = require('underscore');
 
@@ -245,13 +280,15 @@ var SystemManager = require('./../core/systems/manager');
 var MovementSystem = require('./../core/systems/movement');
 var RenderSystem = require('./../core/systems/render');
 
-var systemManager = new SystemManager([
-    new MovementSystem(),
-    new RenderSystem()
-]);
-
 module.exports = {
-    systemManager: systemManager
+    create: function(renderTarget) {
+        var systemManager = new SystemManager([
+            new MovementSystem(),
+            new RenderSystem(renderTarget).setUp()
+        ]);
+
+        return systemManager;
+    }
 };
 },{"./../core/systems/manager":9,"./../core/systems/movement":10,"./../core/systems/render":11}],16:[function(require,module,exports){
 //     Underscore.js 1.7.0

@@ -23,13 +23,16 @@ describe('Movement System', function() {
 
         context('entities with components supplied', function(){
             var rendered = new Rendered();
+            var location = new Location();
             var validEntity = new Entity('valid').addComponent(rendered)
-                                                 .addComponent(new Location());
+                                                 .addComponent(location);
 
             var invalidEntity1 = new Entity('invalid1');
 
             beforeEach(function() {
-                spyOn(instance, 'process');
+                spyOn(instance, 'process').and.returnValue()
+                spyOn(instance, 'preprocess').and.returnValue()
+                instance.context = {}
                 var entities = [
                     invalidEntity1,
                     validEntity
@@ -37,9 +40,14 @@ describe('Movement System', function() {
                 instance.update(entities);
             });
 
+            it('callled preprocess', function() {
+                expect(instance.preprocess).toHaveBeenCalled()
+            });
+
             it('called processed the required entities', function(){
                 var expectedComponents = {
-                    rendered: rendered
+                    rendered: rendered,
+                    location: location
                 };
 
                 expect(instance.process).toHaveBeenCalledWith(validEntity, expectedComponents);

@@ -1,10 +1,10 @@
 var runLater = (function() {
     var fallback = function(callback) {
-        var targetFPS = 2;
+        var targetFPS = 60;
         return window.setTimeout(callback, 1000 / targetFPS);
     };
 
-    return fallback;
+    return window.requestAnimationFrame || fallback;
 })();
 
 var loopEndlessly = function(callback) {

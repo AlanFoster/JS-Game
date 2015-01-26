@@ -8,7 +8,7 @@ describe('Systems Main', function () {
 
     describe('#systemManager', function() {
         it('exists', function() {
-            expect(subject.systemManager).toBeTruthy();
+            expect(subject.create).toBeTruthy();
         })
     })
 });
