@@ -1,4 +1,4 @@
-var entityManager = require('./entities').entityManager
+var entityManager = require('./entities').entityManager;
 var SystemManager = require('./../core/systems/manager');
 var MovementSystem = require('./../core/systems/movement');
 var RenderSystem = require('./../core/systems/render');

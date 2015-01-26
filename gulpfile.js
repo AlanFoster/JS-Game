@@ -1,12 +1,13 @@
 var gulp = require('gulp');
-var browserify = require('gulp-browserify');
 var replace = require('gulp-replace');
 var rename = require('gulp-rename');
 var haml = require('gulp-haml');
 var karma = require('karma').server;
+var webpack = require('gulp-webpack');
+var configuration = require('./config');
 
 var handleError = function(error) {
-    var errorContent = escape(error.message.replace(/'|"/g, "\'"))
+    var errorContent = error.message.replace(/'|"/g, "\\\'");
 
     gulp.src('app/assets/js/error.js')
         .pipe(replace("#{ERROR}", errorContent))
@@ -14,16 +15,11 @@ var handleError = function(error) {
         .pipe(gulp.dest('dist/js'));
 };
 
-gulp.task('browserify', function () {
+gulp.task('javascript_bundle', function () {
     gulp.src('app/assets/js/main.js')
-        .pipe(browserify({ debug: true, paths: ['app/assets/js'] }))
+        .pipe(webpack(configuration.webpack))
         .on('error', handleError)
         .pipe(gulp.dest('dist/js'));
-});
-
-gulp.task('bower_components', function () {
-    gulp.src('app/assets/js/bower_components/**')
-        .pipe(gulp.dest('dist'));
 });
 
 gulp.task('haml', function () {
@@ -32,18 +28,17 @@ gulp.task('haml', function () {
         .pipe(gulp.dest('dist'));
 });
 
-
 gulp.task('test', function(done) {
     karma.start({
-        configFile: __dirname + '/karma.conf.js'
+        configFile: __dirname + '/config/karma.js'
     }, done)
 });
 
-gulp.task('javascript', ['bower_components', 'browserify']);
+gulp.task('javascript', ['javascript_bundle']);
 gulp.task('assets', ['javascript']);
 gulp.task('views', ['haml']);
-gulp.task('default', ['assets', 'views']);
-
+gulp.task('build', ['assets', 'views']);
 gulp.task('watch', function () {
     gulp.watch('app/**/*.*', ['default']);
 });
+gulp.task('default', ['build', 'watch']);

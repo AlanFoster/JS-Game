@@ -1,0 +1,12 @@
+{
+  "bail": true,
+  "output": {
+    "filename": "main.js"
+  },
+  "resolve": {
+    "modulesDirectories": [
+      "app/assets/third_party",
+      "app/assets/js"
+    ]
+  }
+}
