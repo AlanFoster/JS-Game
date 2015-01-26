@@ -1,6 +1,6 @@
-var subject = require('./../../../../app/assets/js/components/rendered');
+var subject = require('./../../../../../app/assets/js/core/components/rendered');
 
-describe('location component', function() {
+describe('rendered component', function() {
     it('exists', function() {
         expect(subject).toBeTruthy();
     });

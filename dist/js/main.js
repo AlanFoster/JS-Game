@@ -26,7 +26,7 @@ module.exports.create = function(tag, properties) {
 
     return Component;
 };
-},{"underscore":12}],2:[function(require,module,exports){
+},{"underscore":16}],2:[function(require,module,exports){
 var Components = require('./components');
 
 module.exports = Components.create('location', {
@@ -97,63 +97,6 @@ var EntityManager = (function () {
 
 module.exports = EntityManager;
 },{}],7:[function(require,module,exports){
-var _ = require('underscore');
-var Entity = require('./entities/entity');
-var EntityManager = require('./entities/entity_manager');
-var IdGenerator = require('./generators/idGenerator');
-var SystemManager = require('./systems/manager');
-var MovementSystem = require('./systems/movement');
-var RenderSystem = require('./systems/render');
-
-var Rendered = require('./components/rendered');
-var Velocity = require('./components/velocity');
-var Location = require('./components/location');
-
-var entityManager = new EntityManager(Entity, new IdGenerator());
-var systemManager = new SystemManager([
-    new MovementSystem(),
-    new RenderSystem()
-]);
-
-var entity = entityManager.createEntity()
-                          .addComponent(new Rendered())
-                          .addComponent(new Velocity({ x: 1, y: 3 }))
-                          .addComponent(new Location());
-
-
-var looper = (function() {
-    var runLater = (function() {
-        var fallback = function(callback) {
-            var targetFPS = 2;
-            return window.setTimeout(callback, 1000 / targetFPS);
-        };
-
-        return fallback;
-    })();
-
-    var loopEndlessly = function(callback) {
-        runLater(function() {
-            loopEndlessly(callback);
-        });
-        callback()
-    };
-
-    return {
-        queue: loopEndlessly
-    };
-})();
-
-window.onload = function() {
-    looper.queue(function() {
-        systemManager.update(entityManager.entities);
-    })
-};
-
-module.exports.world = {
-    entities: []
-};
-
-},{"./components/location":2,"./components/rendered":3,"./components/velocity":4,"./entities/entity":5,"./entities/entity_manager":6,"./generators/idGenerator":8,"./systems/manager":9,"./systems/movement":10,"./systems/render":11,"underscore":12}],8:[function(require,module,exports){
 var SequentialIdGenerator = function() {
     var count = 0;
     return {
@@ -164,6 +107,26 @@ var SequentialIdGenerator = function() {
 };
 
 module.exports = SequentialIdGenerator;
+},{}],8:[function(require,module,exports){
+var runLater = (function() {
+    var fallback = function(callback) {
+        var targetFPS = 2;
+        return window.setTimeout(callback, 1000 / targetFPS);
+    };
+
+    return fallback;
+})();
+
+var loopEndlessly = function(callback) {
+    runLater(function() {
+        loopEndlessly(callback);
+    });
+    callback();
+};
+
+module.exports = {
+    queue: loopEndlessly
+}
 },{}],9:[function(require,module,exports){
 var _ = require('underscore');
 
@@ -188,7 +151,7 @@ var Manager = (function() {
 })();
 
 module.exports = Manager;
-},{"underscore":12}],10:[function(require,module,exports){
+},{"underscore":16}],10:[function(require,module,exports){
 var Movement = (function() {
     var System = function() {
 
@@ -245,6 +208,52 @@ var Render = (function() {
 
 module.exports = Render;
 },{}],12:[function(require,module,exports){
+var _ = require('underscore');
+var entityManager = require('./game/entities').entityManager;
+var systemManager = require('./game/systems').systemManager;
+var Components = require('./game/components');
+var runner = require('./core/runner');
+
+var entity = entityManager.createEntity()
+                          .addComponent(new Components.Rendered())
+                          .addComponent(new Components.Velocity({ x: 1, y: 3 }))
+                          .addComponent(new Components.Location());
+
+window.onload = function() {
+    runner.queue(function() {
+        systemManager.update(entityManager.entities);
+    })
+};
+},{"./core/runner":8,"./game/components":13,"./game/entities":14,"./game/systems":15,"underscore":16}],13:[function(require,module,exports){
+var _ = require('underscore');
+
+module.exports = {
+    Location: require('./../core/components/location'),
+    Velocity: require('./../core/components/velocity'),
+    Rendered: require('./../core/components/rendered')
+};
+},{"./../core/components/location":2,"./../core/components/rendered":3,"./../core/components/velocity":4,"underscore":16}],14:[function(require,module,exports){
+var Entity = require('./../core/entities/entity');
+var EntityManager = require('./../core/entities/entity_manager');
+var IdGenerator = require('./../core/generators/idGenerator');
+
+module.exports = {
+    entityManager: new EntityManager(Entity, new IdGenerator())
+};
+},{"./../core/entities/entity":5,"./../core/entities/entity_manager":6,"./../core/generators/idGenerator":7}],15:[function(require,module,exports){
+var SystemManager = require('./../core/systems/manager');
+var MovementSystem = require('./../core/systems/movement');
+var RenderSystem = require('./../core/systems/render');
+
+var systemManager = new SystemManager([
+    new MovementSystem(),
+    new RenderSystem()
+]);
+
+module.exports = {
+    systemManager: systemManager
+};
+},{"./../core/systems/manager":9,"./../core/systems/movement":10,"./../core/systems/render":11}],16:[function(require,module,exports){
 //     Underscore.js 1.7.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -1661,4 +1670,4 @@ module.exports = Render;
   }
 }.call(this));
 
-},{}]},{},[7])
+},{}]},{},[12])

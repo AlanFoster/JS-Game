@@ -1,4 +1,4 @@
-var subject = require('./../../../../app/assets/js/components/velocity');
+var subject = require('./../../../../../app/assets/js/core/components/location');
 
 describe('location component', function() {
     it('exists', function() {
@@ -6,7 +6,7 @@ describe('location component', function() {
     });
 
     describe('#new', function() {
-        var expectedTagName = 'velocity';
+        var expectedTagName = 'location';
 
         context('all values supplied', function() {
             var instance = new subject({
@@ -23,7 +23,7 @@ describe('location component', function() {
             });
 
             it('stores the component tag', function() {
-                expect(instance.tag).toBe(expectedTagName)
+               expect(instance.tag).toBe(expectedTagName)
             });
         });
 
