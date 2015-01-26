@@ -249,11 +249,6 @@ window.onload = function() {
     var Components = require('./game/components');
     var runner = require('./core/runner');
 
-    var entity = entityManager.createEntity()
-                              .addComponent(new Components.Rendered())
-                              .addComponent(new Components.Velocity({ x: 1, y: 3 }))
-                              .addComponent(new Components.Location());
-
     runner.queue(function() {
         systemManager.update(entityManager.entities);
     })
@@ -276,21 +271,65 @@ module.exports = {
     entityManager: new EntityManager(Entity, new IdGenerator())
 };
 },{"./../core/entities/entity":5,"./../core/entities/entity_manager":6,"./../core/generators/idGenerator":7}],15:[function(require,module,exports){
+var entityManager = require('./entities').entityManager
 var SystemManager = require('./../core/systems/manager');
 var MovementSystem = require('./../core/systems/movement');
 var RenderSystem = require('./../core/systems/render');
+
+var Components = require('./components')
+var RandomEntityCreatorSystem = (function() {
+    var System = function(entityManager) {
+        this.entityManager = entityManager;
+
+        this.callCount = 0;
+    };
+
+    var random = function(min, max) {
+        return ~~(min + (Math.random() * (max - min)));
+    };
+
+    System.prototype = {
+        update: function(entities) {
+            this.callCount++;
+            if(this.callCount % 10 !== 0) return;
+
+            var colors = [
+                'red', 'white', 'blue'
+            ];
+
+            this.entityManager.createEntity()
+                .addComponent(new Components.Rendered({
+                    width: random(0, 60),
+                    height: random(0, 60),
+                    color: colors[random(0, colors.length)]
+                }))
+                .addComponent(new Components.Velocity({
+                    x: random(-3, 3) | 1,
+                    y: random(-3, 3 | 1)
+                }))
+                .addComponent(new Components.Location({
+                    x: random(0, 500),
+                    y: random(0, 500)
+                }));
+        }
+    };
+
+    return System;
+})();
+
 
 module.exports = {
     create: function(renderTarget) {
         var systemManager = new SystemManager([
             new MovementSystem(),
+            new RandomEntityCreatorSystem(entityManager),
             new RenderSystem(renderTarget).setUp()
         ]);
 
         return systemManager;
     }
 };
-},{"./../core/systems/manager":9,"./../core/systems/movement":10,"./../core/systems/render":11}],16:[function(require,module,exports){
+},{"./../core/systems/manager":9,"./../core/systems/movement":10,"./../core/systems/render":11,"./components":13,"./entities":14}],16:[function(require,module,exports){
 //     Underscore.js 1.7.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
