@@ -47,7 +47,7 @@
 	window.onload = function() {
 	    var _ = __webpack_require__(4);
 	    var entityManager = __webpack_require__(1).entityManager;
-	    var systemManager = __webpack_require__(2).create(document.body)
+	    var systemManager = __webpack_require__(2).create(document.body);
 	    var runner = __webpack_require__(3);
 
 	    runner.queue(function() {
@@ -60,24 +60,25 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Entity = __webpack_require__(6);
-	var EntityManager = __webpack_require__(7);
-	var IdGenerator = __webpack_require__(8);
+	var Entity = __webpack_require__(7);
+	var EntityManager = __webpack_require__(8);
+	var IdGenerator = __webpack_require__(9);
 
 	module.exports = {
 	    entityManager: new EntityManager(Entity, new IdGenerator())
 	};
+
 
 /***/ },
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var entityManager = __webpack_require__(1).entityManager;
-	var SystemManager = __webpack_require__(9);
-	var MovementSystem = __webpack_require__(10);
-	var RenderSystem = __webpack_require__(11);
+	var SystemManager = __webpack_require__(10);
+	var MovementSystem = __webpack_require__(5);
+	var RenderSystem = __webpack_require__(6);
 
-	var Components = __webpack_require__(5)
+	var Components = __webpack_require__(11)
 	var RandomEntityCreatorSystem = (function() {
 	    var System = function(entityManager) {
 	        this.entityManager = entityManager;
@@ -99,19 +100,19 @@
 	            ];
 
 	            this.entityManager.createEntity()
-	                .addComponent(new Components.Rendered({
-	                    width: random(0, 60),
-	                    height: random(0, 60),
-	                    color: colors[random(0, colors.length)]
-	                }))
-	                .addComponent(new Components.Velocity({
-	                    x: random(-3, 3) | 1,
-	                    y: random(-3, 3 | 1)
-	                }))
-	                .addComponent(new Components.Location({
-	                    x: random(0, 500),
-	                    y: random(0, 500)
-	                }));
+	                                .addComponent(new Components.Rendered({
+	                                    width: random(0, 60),
+	                                    height: random(0, 60),
+	                                    color: colors[random(0, colors.length)]
+	                                }))
+	                                .addComponent(new Components.Velocity({
+	                                    x: random(-3, 3) | 1,
+	                                    y: random(-3, 3 | 1)
+	                                }))
+	                                .addComponent(new Components.Location({
+	                                    x: random(0, 500),
+	                                    y: random(0, 500)
+	                                }));
 	        }
 	    };
 
@@ -1580,121 +1581,6 @@
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(4);
-
-	var allComponents = _.object(_.map([
-	    'Rendered',
-	    'Velocity',
-	    'Location'
-	], function(tag) {
-	    return [tag, __webpack_require__(12)("./" + tag.toLowerCase())];
-	}));
-
-	module.exports = allComponents;
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Entity = (function() {
-	    var Entity = function(id) {
-	        this.id = id;
-	        this.components = {};
-	    };
-
-	    Entity.prototype = {
-	        addComponent: function(component) {
-	            this.components[component.tag] = component;
-	            return this;
-	        },
-	        getComponent: function(tag) {
-	            return this.components[tag];
-	        },
-	        removeComponent: function(tag) {
-	            delete this.components[tag];
-	        },
-	        toString: function() {
-	            return JSON.stringify(this, null, 4)
-	        }
-	    };
-
-	    return Entity;
-	})();
-
-	module.exports = Entity;
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var EntityManager = (function () {
-	    var EntityManager = function (Entity, idGenerator) {
-	        this.Entity = Entity;
-	        this.idGenerator = idGenerator;
-	        this.entities = []
-	    };
-
-	    EntityManager.prototype = {
-	        createEntity: function(){
-	            var entity = new this.Entity(this.idGenerator.next())
-	            this.entities.push(entity);
-	            return entity;
-	        }
-	    };
-
-	    return EntityManager;
-	})();
-
-	module.exports = EntityManager;
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var SequentialIdGenerator = function() {
-	    var count = 0;
-	    return {
-	        next: function() {
-	            return ++count;
-	        }
-	    };
-	};
-
-	module.exports = SequentialIdGenerator;
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(4);
-
-	var Manager = (function() {
-	    var Manager = function(systems) {
-	        this.systems = systems || []
-	    };
-
-	    Manager.prototype = {
-	        register: function(systems) {
-	            systems = _.isArray(systems) ? systems : [systems];
-	            this.systems = this.systems.concat(systems)
-	        },
-	        update: function(entities) {
-	            _.each(this.systems, function(system) {
-	                system.update(entities);
-	            });
-	        }
-	    };
-
-	    return Manager;
-	})();
-
-	module.exports = Manager;
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
 	var Movement = (function() {
 	    var System = function() {
 
@@ -1726,7 +1612,7 @@
 	module.exports = Movement;
 
 /***/ },
-/* 11 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);
@@ -1792,18 +1678,133 @@
 	module.exports = Render;
 
 /***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Entity = (function() {
+	    var Entity = function(id) {
+	        this.id = id;
+	        this.components = {};
+	    };
+
+	    Entity.prototype = {
+	        addComponent: function(component) {
+	            this.components[component.tag] = component;
+	            return this;
+	        },
+	        getComponent: function(tag) {
+	            return this.components[tag];
+	        },
+	        removeComponent: function(tag) {
+	            delete this.components[tag];
+	        },
+	        toString: function() {
+	            return JSON.stringify(this, null, 4)
+	        }
+	    };
+
+	    return Entity;
+	})();
+
+	module.exports = Entity;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var EntityManager = (function () {
+	    var EntityManager = function (Entity, idGenerator) {
+	        this.Entity = Entity;
+	        this.idGenerator = idGenerator;
+	        this.entities = []
+	    };
+
+	    EntityManager.prototype = {
+	        createEntity: function(){
+	            var entity = new this.Entity(this.idGenerator.next())
+	            this.entities.push(entity);
+	            return entity;
+	        }
+	    };
+
+	    return EntityManager;
+	})();
+
+	module.exports = EntityManager;
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var SequentialIdGenerator = function() {
+	    var count = 0;
+	    return {
+	        next: function() {
+	            return ++count;
+	        }
+	    };
+	};
+
+	module.exports = SequentialIdGenerator;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(4);
+
+	var Manager = (function() {
+	    var Manager = function(systems) {
+	        this.systems = systems || []
+	    };
+
+	    Manager.prototype = {
+	        register: function(systems) {
+	            systems = _.isArray(systems) ? systems : [systems];
+	            this.systems = this.systems.concat(systems)
+	        },
+	        update: function(entities) {
+	            _.each(this.systems, function(system) {
+	                system.update(entities);
+	            });
+	        }
+	    };
+
+	    return Manager;
+	})();
+
+	module.exports = Manager;
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(4);
+
+	var allComponents = _.object(_.map([
+	    'Rendered',
+	    'Velocity',
+	    'Location'
+	], function(tag) {
+	    return [tag, __webpack_require__(12)("./" + tag.toLowerCase())];
+	}));
+
+	module.exports = allComponents;
+
+/***/ },
 /* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./components": 13,
-		"./components.js": 13,
-		"./location": 14,
-		"./location.js": 14,
-		"./rendered": 15,
-		"./rendered.js": 15,
-		"./velocity": 16,
-		"./velocity.js": 16
+		"./index": 11,
+		"./index.js": 11,
+		"./location": 13,
+		"./location.js": 13,
+		"./rendered": 14,
+		"./rendered.js": 14,
+		"./velocity": 15,
+		"./velocity.js": 15
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -1821,6 +1822,40 @@
 
 /***/ },
 /* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(16);
+
+	module.exports = Components.create('location', {
+	    x: 0,
+	    y: 0
+	});
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(16);
+
+	module.exports = Components.create('rendered', {
+	    color: 'red',
+	    width: 100,
+	    height: 100
+	});
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(16);
+
+	module.exports = Components.create('velocity', {
+	    x: 0,
+	    y: 0
+	});
+
+/***/ },
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);
@@ -1850,40 +1885,6 @@
 
 	    return Component;
 	};
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(13);
-
-	module.exports = Components.create('location', {
-	    x: 0,
-	    y: 0
-	});
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(13);
-
-	module.exports = Components.create('rendered', {
-	    color: 'red',
-	    width: 100,
-	    height: 100
-	});
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(13);
-
-	module.exports = Components.create('velocity', {
-	    x: 0,
-	    y: 0
-	});
 
 /***/ }
 /******/ ])

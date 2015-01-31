@@ -5,7 +5,7 @@ var allComponents = _.object(_.map([
     'Velocity',
     'Location'
 ], function(tag) {
-    return [tag, require('core/components/' + tag.toLowerCase())];
+    return [tag, require('game/components/' + tag.toLowerCase())];
 }));
 
 module.exports = allComponents;

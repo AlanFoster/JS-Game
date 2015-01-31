@@ -1,7 +1,7 @@
-var subject = require('core/systems/render');
+var subject = require('game/systems/render');
 var Entity = require('core/entities/entity');
-var Location = require('core/components/location');
-var Rendered = require('core/components/rendered');
+var Location = require('game/components/location');
+var Rendered = require('game/components/rendered');
 
 describe('Movement System', function() {
     it('exists', function() {

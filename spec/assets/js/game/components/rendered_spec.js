@@ -1,4 +1,4 @@
-var subject = require('core/components/rendered');
+var subject = require('game/components/rendered');
 
 describe('rendered component', function() {
     it('exists', function() {

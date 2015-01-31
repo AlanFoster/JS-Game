@@ -1,6 +1,6 @@
 // Karma configuration
 // Generated on Sat Jan 24 2015 00:15:47 GMT+0000 (GMT)
-
+var _ = require('underscore')
 var configuration = require('./index');
 
 module.exports = function(config) {
@@ -55,6 +55,8 @@ module.exports = function(config) {
     // if true, Karma captures browsers, runs the tests and exits
     singleRun: false,
 
-    webpack: configuration.webpack
+    webpack: _.extend(configuration.webpack, {
+        bail: false
+    })
   });
 };

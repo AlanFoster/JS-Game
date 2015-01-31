@@ -1,12 +1,12 @@
-var subject = require('core/components/velocity');
+var subject = require('game/components/location');
 
-describe('velocity component', function() {
+describe('location component', function() {
     it('exists', function() {
         expect(subject).toBeTruthy();
     });
 
     describe('#new', function() {
-        var expectedTagName = 'velocity';
+        var expectedTagName = 'location';
 
         context('all values supplied', function() {
             var instance = new subject({
@@ -23,7 +23,7 @@ describe('velocity component', function() {
             });
 
             it('stores the component tag', function() {
-                expect(instance.tag).toBe(expectedTagName)
+               expect(instance.tag).toBe(expectedTagName)
             });
         });
 

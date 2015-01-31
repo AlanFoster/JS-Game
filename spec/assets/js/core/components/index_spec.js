@@ -1,4 +1,4 @@
-var subject = require('core/components/components');
+var subject = require('core/components');
 
 describe('components helper', function() {
     it('exists', function() {

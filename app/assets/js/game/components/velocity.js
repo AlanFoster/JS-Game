@@ -1,4 +1,4 @@
-var Components = require('./components');
+var Components = require('./../../core/components/index');
 
 module.exports = Components.create('velocity', {
     x: 0,

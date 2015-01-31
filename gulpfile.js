@@ -5,9 +5,12 @@ var haml = require('gulp-haml');
 var karma = require('karma').server;
 var webpack = require('gulp-webpack');
 var configuration = require('./config');
+var watch = require('gulp-watch');
 
 var handleError = function(error) {
-    var errorContent = error.message.replace(/'|"/g, "\\\'");
+    var errorContent = error.message
+                            .replace(/'|"/g, "\\\'")
+                            .replace(/\n|\r/g, "<br />");
 
     gulp.src('app/assets/js/error.js')
         .pipe(replace("#{ERROR}", errorContent))
@@ -30,7 +33,7 @@ gulp.task('haml', function () {
 
 gulp.task('test', function(done) {
     karma.start({
-        configFile: __dirname + '/config/karma.js'
+        configFile: __dirname + '/config/karma.conf.js'
     }, done)
 });
 
@@ -39,6 +42,8 @@ gulp.task('assets', ['javascript']);
 gulp.task('views', ['haml']);
 gulp.task('build', ['assets', 'views']);
 gulp.task('watch', function () {
-    gulp.watch('app/**/*.*', ['default']);
+    watch('app/**/*.*', function() {
+        gulp.start('build');
+    });
 });
 gulp.task('default', ['build', 'watch']);
