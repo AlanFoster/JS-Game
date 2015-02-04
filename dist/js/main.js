@@ -60,9 +60,9 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Entity = __webpack_require__(7);
-	var EntityManager = __webpack_require__(8);
-	var IdGenerator = __webpack_require__(9);
+	var Entity = __webpack_require__(8);
+	var EntityManager = __webpack_require__(9);
+	var IdGenerator = __webpack_require__(10);
 
 	module.exports = {
 	    entityManager: new EntityManager(Entity, new IdGenerator())
@@ -74,11 +74,12 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var entityManager = __webpack_require__(1).entityManager;
-	var SystemManager = __webpack_require__(10);
-	var MovementSystem = __webpack_require__(5);
-	var RenderSystem = __webpack_require__(6);
+	var SystemManager = __webpack_require__(11);
+	var KeyboardSystem = __webpack_require__(5);
+	var MovementSystem = __webpack_require__(6);
+	var RenderSystem = __webpack_require__(7);
 
-	var Components = __webpack_require__(11)
+	var Components = __webpack_require__(12)
 	var RandomEntityCreatorSystem = (function() {
 	    var System = function(entityManager) {
 	        this.entityManager = entityManager;
@@ -93,26 +94,30 @@
 	    System.prototype = {
 	        update: function(entities) {
 	            this.callCount++;
-	            if(this.callCount % 10 !== 0) return;
+	            if(this.callCount != 1) return;
 
 	            var colors = [
 	                'red', 'white', 'blue'
 	            ];
 
-	            this.entityManager.createEntity()
-	                                .addComponent(new Components.Rendered({
-	                                    width: random(0, 60),
-	                                    height: random(0, 60),
-	                                    color: colors[random(0, colors.length)]
-	                                }))
-	                                .addComponent(new Components.Velocity({
-	                                    x: random(-3, 3) | 1,
-	                                    y: random(-3, 3 | 1)
-	                                }))
-	                                .addComponent(new Components.Location({
-	                                    x: random(0, 500),
-	                                    y: random(0, 500)
-	                                }));
+	            var entity = this.entityManager.createEntity()
+	                                            .addComponent(new Components.Rendered({
+	                                                width: random(0, 60),
+	                                                height: random(0, 60),
+	                                                color: colors[random(0, colors.length)]
+	                                            }))
+	                                            .addComponent(new Components.Velocity({
+	                                                x: 0,
+	                                                y: 0
+	                                            }))
+	                                            .addComponent(new Components.Location({
+	                                                x: random(0, 500),
+	                                                y: random(0, 500)
+	                                            }));
+
+	            if(Math.random() > 0.5) {
+	                entity.addComponent(new Components.Keyboard({}))
+	            }
 	        }
 	    };
 
@@ -123,6 +128,7 @@
 	module.exports = {
 	    create: function(renderTarget) {
 	        var systemManager = new SystemManager([
+	            new KeyboardSystem(window).setUp(),
 	            new MovementSystem(),
 	            new RandomEntityCreatorSystem(entityManager),
 	            new RenderSystem(renderTarget).setUp()
@@ -1581,6 +1587,74 @@
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var _ = __webpack_require__(4)
+
+	var Keyboard = (function() {
+	    var System = function(window) {
+	        this.window = window;
+	        this.keysDown = { };
+	    };
+
+	    var clamp = function(value) {
+	        return function(between) {
+	            if (value > between.to) { return between.to }
+	            if (value < between.from) { return between.from }
+	            return value;
+	        }
+	    };
+
+	    System.prototype = {
+	        setUp: function() {
+	            this.window.onkeydown = this.handleKey.bind(this);
+	            return this;
+	        },
+	        handleKey: function(event) {
+	            var keyCode = event.keyCode || event.which;
+
+	            this.keysDown.left = keyCode == 37;
+	            this.keysDown.up = keyCode == 38;
+	            this.keysDown.right = keyCode == 39;
+	            this.keysDown.down = keyCode == 40;
+	        },
+	        update: function(entities) {
+	            var process = this.process.bind(this);
+	            entities.forEach(function(entity) {
+	                var velocity = entity.getComponent('velocity');
+	                var keyboard = entity.getComponent('keyboard');
+	                if (!velocity || !keyboard) return;
+
+	                process(entity, { velocity: velocity, keyboard: keyboard })
+	            });
+
+	            this.keysDown = {};
+	        },
+	        process: function(entity, components) {
+	            var velocity = components.velocity;
+	            var velocityUpdates = [];
+	            var power = 0.2;
+	            var powerClamp = 2;
+
+	            if(this.keysDown.left) velocityUpdates.push({ x: -power, y: 0 });
+	            if(this.keysDown.up) velocityUpdates.push({ x: 0, y: -power });
+	            if(this.keysDown.right) velocityUpdates.push({ x: power, y: 0 });
+	            if(this.keysDown.down) velocityUpdates.push({ x: 0, y: power });
+
+	            _.each(velocityUpdates, function(update) {
+	                velocity.x = clamp(velocity.x + update.x)({ from : -powerClamp, to: powerClamp });
+	                velocity.y = clamp(velocity.y + update.y)({ from : -powerClamp, to: powerClamp });
+	            });
+	        }
+	    };
+
+	    return System;
+	})();
+
+	module.exports = Keyboard;
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
 	var Movement = (function() {
 	    var System = function() {
 
@@ -1612,7 +1686,7 @@
 	module.exports = Movement;
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);
@@ -1678,7 +1752,7 @@
 	module.exports = Render;
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Entity = (function() {
@@ -1710,7 +1784,7 @@
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var EntityManager = (function () {
@@ -1734,7 +1808,7 @@
 	module.exports = EntityManager;
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var SequentialIdGenerator = function() {
@@ -1749,7 +1823,7 @@
 	module.exports = SequentialIdGenerator;
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);
@@ -1777,7 +1851,7 @@
 	module.exports = Manager;
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);
@@ -1785,26 +1859,29 @@
 	var allComponents = _.object(_.map([
 	    'Rendered',
 	    'Velocity',
-	    'Location'
+	    'Location',
+	    'Keyboard'
 	], function(tag) {
-	    return [tag, __webpack_require__(12)("./" + tag.toLowerCase())];
+	    return [tag, __webpack_require__(13)("./" + tag.toLowerCase())];
 	}));
 
 	module.exports = allComponents;
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./index": 11,
-		"./index.js": 11,
-		"./location": 13,
-		"./location.js": 13,
-		"./rendered": 14,
-		"./rendered.js": 14,
-		"./velocity": 15,
-		"./velocity.js": 15
+		"./index": 12,
+		"./index.js": 12,
+		"./keyboard": 14,
+		"./keyboard.js": 14,
+		"./location": 15,
+		"./location.js": 15,
+		"./rendered": 16,
+		"./rendered.js": 16,
+		"./velocity": 17,
+		"./velocity.js": 17
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -1817,14 +1894,22 @@
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 12;
+	webpackContext.id = 13;
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(16);
+	var Components = __webpack_require__(18);
+
+	module.exports = Components.create('keyboard', {});
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(18);
 
 	module.exports = Components.create('location', {
 	    x: 0,
@@ -1832,10 +1917,10 @@
 	});
 
 /***/ },
-/* 14 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(16);
+	var Components = __webpack_require__(18);
 
 	module.exports = Components.create('rendered', {
 	    color: 'red',
@@ -1844,10 +1929,10 @@
 	});
 
 /***/ },
-/* 15 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(16);
+	var Components = __webpack_require__(18);
 
 	module.exports = Components.create('velocity', {
 	    x: 0,
@@ -1855,7 +1940,7 @@
 	});
 
 /***/ },
-/* 16 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);

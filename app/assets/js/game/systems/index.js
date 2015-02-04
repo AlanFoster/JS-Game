@@ -1,5 +1,6 @@
 var entityManager = require('./../entities').entityManager;
 var SystemManager = require('./../../core/systems/manager');
+var KeyboardSystem = require('./keyboard');
 var MovementSystem = require('./movement');
 var RenderSystem = require('./render');
 
@@ -18,26 +19,30 @@ var RandomEntityCreatorSystem = (function() {
     System.prototype = {
         update: function(entities) {
             this.callCount++;
-            if(this.callCount % 10 !== 0) return;
+            if(this.callCount != 1) return;
 
             var colors = [
                 'red', 'white', 'blue'
             ];
 
-            this.entityManager.createEntity()
-                                .addComponent(new Components.Rendered({
-                                    width: random(0, 60),
-                                    height: random(0, 60),
-                                    color: colors[random(0, colors.length)]
-                                }))
-                                .addComponent(new Components.Velocity({
-                                    x: random(-3, 3) | 1,
-                                    y: random(-3, 3 | 1)
-                                }))
-                                .addComponent(new Components.Location({
-                                    x: random(0, 500),
-                                    y: random(0, 500)
-                                }));
+            var entity = this.entityManager.createEntity()
+                                            .addComponent(new Components.Rendered({
+                                                width: random(0, 60),
+                                                height: random(0, 60),
+                                                color: colors[random(0, colors.length)]
+                                            }))
+                                            .addComponent(new Components.Velocity({
+                                                x: 0,
+                                                y: 0
+                                            }))
+                                            .addComponent(new Components.Location({
+                                                x: random(0, 500),
+                                                y: random(0, 500)
+                                            }));
+
+            if(Math.random() > 0.5) {
+                entity.addComponent(new Components.Keyboard({}))
+            }
         }
     };
 
@@ -48,6 +53,7 @@ var RandomEntityCreatorSystem = (function() {
 module.exports = {
     create: function(renderTarget) {
         var systemManager = new SystemManager([
+            new KeyboardSystem(window).setUp(),
             new MovementSystem(),
             new RandomEntityCreatorSystem(entityManager),
             new RenderSystem(renderTarget).setUp()

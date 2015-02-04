@@ -1,4 +1,4 @@
-var Components = require('./../../core/components/index');
+var Components = require('core/components/index');
 
 module.exports = Components.create('rendered', {
     color: 'red',
