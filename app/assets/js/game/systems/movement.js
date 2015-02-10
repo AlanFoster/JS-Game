@@ -18,8 +18,8 @@ var Movement = (function() {
             var location = components.location;
             var velocity = components.velocity;
 
-            location.x += velocity.x;
-            location.y += velocity.y;
+            location.x += velocity.x * Math.cos(location.rotation);
+            location.y += velocity.y * Math.sin(location.rotation);
         }
     };
 

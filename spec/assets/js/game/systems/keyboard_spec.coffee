@@ -3,6 +3,7 @@ Entity = require('core/entities/entity')
 Location = require('game/components/location')
 Velocity = require('game/components/velocity')
 Rendered = require('game/components/rendered')
+Acceleration = require('game/components/acceleration')
 _ = require('underscore')
 
 describe 'Keyboard System', ->
@@ -11,12 +12,15 @@ describe 'Keyboard System', ->
 
   describe '#setUp', ->
     beforeEach ->
-      @mockWindow = { onkeydown: undefined }
+      @mockWindow = {onkeydown: undefined}
       @instance = new subject(@mockWindow)
       @instance.setUp()
 
     it 'registers an eventHandler', ->
       expect(@mockWindow.onkeydown).toEqual(jasmine.any(Function))
+
+    it 'registers an eventHandler', ->
+      expect(@mockWindow.onkeyup).toEqual(jasmine.any(Function))
 
   describe '#handleKey', ->
     beforeEach ->
@@ -27,52 +31,40 @@ describe 'Keyboard System', ->
         down: 40
       @instance = new subject()
 
-    context 'left key down', ->
+    describe 'left key down', ->
       beforeEach ->
-        event = { keyCode: @keys.left }
+        event = {keyCode: @keys.left, type: 'keydown'}
         @expected =
           left: true
-          up: false
-          right: false
-          down: false
         @instance.handleKey event
 
       it 'sets the keys correctly', ->
         expect(@instance.keysDown).toEqual(@expected)
 
-    context 'up key down', ->
+    describe 'up key down', ->
       beforeEach ->
-        event = { keyCode: @keys.up }
+        event = {keyCode: @keys.up, type: 'keydown'}
         @expected =
-          left: false
           up: true
-          right: false
-          down: false
         @instance.handleKey event
 
       it 'sets the keys correctly', ->
         expect(@instance.keysDown).toEqual(@expected)
 
-    context 'right key down', ->
+    describe 'right key down', ->
       beforeEach ->
-        event = { keyCode: @keys.right }
+        event = {keyCode: @keys.right, type: 'keydown'}
         @expected =
-          left: false
-          up: false
           right: true
-          down: false
         @instance.handleKey event
 
       it 'sets the keys correctly', ->
         expect(@instance.keysDown).toEqual(@expected)
 
-    context 'down key down', ->
+    describe 'down key down', ->
       beforeEach ->
-        event = { keyCode: @keys.down }
+        event = {keyCode: @keys.down, type: 'keydown'}
         @expected =
-          left: false
-          up: false
-          right: false
           down: true
         @instance.handleKey event
 
@@ -84,41 +76,51 @@ describe 'Keyboard System', ->
       @instance = new subject()
 
     [
-       { key: 'left', expectedX: -0.2, expectedY: 0 },
-       { key: 'up', expectedX: 0, expectedY: -0.2 },
-       { key: 'right', expectedX: 0.2, expectedY: 0 },
-       { key: 'down', expectedX: 0, expectedY: 0.2 }
-    ].forEach ({key, expectedX, expectedY}) ->
+      {key: 'left', x: 0, y: 0, rotation: -1},
+      {key: 'up', x: 1, y: 1, rotation: 0},
+      {key: 'right', x: 0, y: 0, rotation: 1},
+      {key: 'down', x: -1, y: -1, rotation: 0}
+    ].forEach ({key, x, y, rotation}) ->
       describe "#{key} is down", ->
         beforeEach ->
           @instance.keysDown = {}
           @instance.keysDown[key] = true
           @velocity = new Velocity x: 0, y: 0
-          @instance.process({}, { velocity: @velocity })
+          @acceleration = new Acceleration power: 1, maxSpeed: 5, turningSpeed: 1
+          @location = new Location x: 0, y: 0, rotation: 0
+          @instance.process({}, {velocity: @velocity, acceleration: @acceleration, location: @location})
 
-         it 'increases X velocity', ->
-           expect(@velocity.x).toBe expectedX
+        it 'increases X velocity', ->
+          expect(@velocity.x).toBe x
 
-         it 'increases Y velocity', ->
-           expect(@velocity.y).toBe expectedY
+        it 'increases Y velocity', ->
+          expect(@velocity.y).toBe y
+
+        it 'increases Y velocity', ->
+          expect(@location.rotation).toBe rotation
 
     [
-       { key: 'left', expectedX: -2, expectedY: 0 },
-       { key: 'up', expectedX: 0, expectedY: -2 },
-       { key: 'right', expectedX: 2, expectedY: 0 },
-       { key: 'down', expectedX: 0, expectedY: 2 }
-    ].forEach ({key, expectedX, expectedY}) ->
+      {key: 'left', x: 0, y: 0, rotation: -26},
+      {key: 'up', x: 5, y: 5, rotation: 0},
+      {key: 'right', x: 0, y: 0, rotation: +26},
+      {key: 'down', x: -5, y: -5, rotation: 0}
+    ].forEach ({key, x, y, rotation}) ->
       describe "#{key} is down multiple times", ->
         beforeEach ->
           @instance.keysDown = {}
           @instance.keysDown[key] = true
           @velocity = new Velocity x: 0, y: 0
+          @acceleration = new Acceleration power: 1, maxSpeed: 5, turningSpeed: 1
+          @location = new Location x: 0, y: 0, rotation: 0
 
-          [0..12].forEach () =>
-            @instance.process({}, { velocity: @velocity })
+          [0..25].forEach () =>
+            @instance.process({}, {velocity: @velocity, acceleration: @acceleration, location: @location})
 
-         it 'increases X velocity', ->
-           expect(@velocity.x).toBe expectedX
+        it 'increases X velocity', ->
+          expect(@velocity.x).toBe x
 
-         it 'increases Y velocity', ->
-           expect(@velocity.y).toBe expectedY  
+        it 'increases Y velocity', ->
+          expect(@velocity.y).toBe y
+
+        it 'increases Y velocity', ->
+          expect(@location.rotation).toBe rotation

@@ -60,9 +60,9 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Entity = __webpack_require__(8);
-	var EntityManager = __webpack_require__(9);
-	var IdGenerator = __webpack_require__(10);
+	var Entity = __webpack_require__(9);
+	var EntityManager = __webpack_require__(10);
+	var IdGenerator = __webpack_require__(11);
 
 	module.exports = {
 	    entityManager: new EntityManager(Entity, new IdGenerator())
@@ -74,12 +74,13 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var entityManager = __webpack_require__(1).entityManager;
-	var SystemManager = __webpack_require__(11);
+	var SystemManager = __webpack_require__(12);
 	var KeyboardSystem = __webpack_require__(5);
 	var MovementSystem = __webpack_require__(6);
 	var RenderSystem = __webpack_require__(7);
+	var FrictionSystem = __webpack_require__(8);
 
-	var Components = __webpack_require__(12)
+	var Components = __webpack_require__(13)
 	var RandomEntityCreatorSystem = (function() {
 	    var System = function(entityManager) {
 	        this.entityManager = entityManager;
@@ -115,9 +116,9 @@
 	                                                y: random(0, 500)
 	                                            }));
 
-	            if(Math.random() > 0.5) {
-	                entity.addComponent(new Components.Keyboard({}))
-	            }
+	            entity.addComponent(new Components.Keyboard({}))
+	            entity.addComponent(new Components.Acceleration({}))
+	                  .addComponent(new Components.Friction({}))
 	        }
 	    };
 
@@ -129,6 +130,7 @@
 	    create: function(renderTarget) {
 	        var systemManager = new SystemManager([
 	            new KeyboardSystem(window).setUp(),
+	            new FrictionSystem(),
 	            new MovementSystem(),
 	            new RandomEntityCreatorSystem(entityManager),
 	            new RenderSystem(renderTarget).setUp()
@@ -1587,7 +1589,7 @@
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(4)
+	var _ = __webpack_require__(4);
 
 	var Keyboard = (function() {
 	    var System = function(window) {
@@ -1603,45 +1605,60 @@
 	        }
 	    };
 
+	    var keyMappings = {
+	        37: 'left',
+	        38: 'up',
+	        39: 'right',
+	        40: 'down'
+	    };
+
 	    System.prototype = {
 	        setUp: function() {
-	            this.window.onkeydown = this.handleKey.bind(this);
+	            this.window.onkeydown = this.window.onkeyup = this.handleKey.bind(this);
 	            return this;
 	        },
 	        handleKey: function(event) {
 	            var keyCode = event.keyCode || event.which;
+	            var key = keyMappings[keyCode];
+	            if (!key) return;
 
-	            this.keysDown.left = keyCode == 37;
-	            this.keysDown.up = keyCode == 38;
-	            this.keysDown.right = keyCode == 39;
-	            this.keysDown.down = keyCode == 40;
+	            this.keysDown[key] = event.type == 'keydown';
 	        },
 	        update: function(entities) {
 	            var process = this.process.bind(this);
 	            entities.forEach(function(entity) {
 	                var velocity = entity.getComponent('velocity');
+	                var location = entity.getComponent('location');
 	                var keyboard = entity.getComponent('keyboard');
-	                if (!velocity || !keyboard) return;
+	                var acceleration = entity.getComponent('acceleration');
+	                if (!velocity || !keyboard || !acceleration) return;
 
-	                process(entity, { velocity: velocity, keyboard: keyboard })
+	                process(entity, { velocity: velocity, keyboard: keyboard, location: location, acceleration: acceleration })
 	            });
 
-	            this.keysDown = {};
 	        },
 	        process: function(entity, components) {
 	            var velocity = components.velocity;
-	            var velocityUpdates = [];
-	            var power = 0.2;
-	            var powerClamp = 2;
+	            var location = components.location;
+	            var acceleration = components.acceleration;
 
-	            if(this.keysDown.left) velocityUpdates.push({ x: -power, y: 0 });
-	            if(this.keysDown.up) velocityUpdates.push({ x: 0, y: -power });
-	            if(this.keysDown.right) velocityUpdates.push({ x: power, y: 0 });
-	            if(this.keysDown.down) velocityUpdates.push({ x: 0, y: power });
+	            var velocityUpdates = [];
+
+	            var power = acceleration.power;
+	            var maxSpeed = acceleration.maxSpeed;
+	            var rotation = acceleration.turningSpeed;
+
+	            if(this.keysDown.left) velocityUpdates.push({ x: 0, y: 0, rotation: -rotation });
+	            if(this.keysDown.right) velocityUpdates.push({ x: 0, y: 0, rotation: rotation });
+
+	            if(this.keysDown.up) velocityUpdates.push({ x: power, y: power, rotation: 0 });
+	            if(this.keysDown.down) velocityUpdates.push({ x: -power, y: -power, rotation: 0 });
 
 	            _.each(velocityUpdates, function(update) {
-	                velocity.x = clamp(velocity.x + update.x)({ from : -powerClamp, to: powerClamp });
-	                velocity.y = clamp(velocity.y + update.y)({ from : -powerClamp, to: powerClamp });
+	                velocity.x = clamp(velocity.x + update.x)({ from : -maxSpeed, to: maxSpeed });
+	                velocity.y = clamp(velocity.y + update.y)({ from : -maxSpeed, to: maxSpeed });
+
+	                location.rotation += update.rotation
 	            });
 	        }
 	    };
@@ -1675,8 +1692,8 @@
 	            var location = components.location;
 	            var velocity = components.velocity;
 
-	            location.x += velocity.x;
-	            location.y += velocity.y;
+	            location.x += velocity.x * Math.cos(location.rotation);
+	            location.y += velocity.y * Math.sin(location.rotation);
 	        }
 	    };
 
@@ -1725,10 +1742,10 @@
 	                var location = entity.getComponent('location');
 	                if (!rendered || !location) return;
 
-	                process(entity, { rendered: rendered, location: location })
+	                process(entity, {rendered: rendered, location: location})
 	            })
 	        },
-	        preprocess: function(entities) {
+	        preprocess: function (entities) {
 	            var context = this.context;
 
 	            context.fillStyle = '#000';
@@ -1742,7 +1759,22 @@
 
 	            context.fillStyle = rendered.color;
 
-	            context.fillRect(location.x, location.y, rendered.width, rendered.height);
+	            var center = {
+	                x: location.x + (rendered.width / 2),
+	                y: location.y + (rendered.height / 2)
+	            };
+
+	            var drawAt = {
+	                x: -rendered.width / 2,
+	                y: -rendered.height / 2
+	            };
+
+	            context.translate(center.x, center.y);
+
+	            context.rotate(location.rotation);
+	            context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
+
+	            context.setTransform(1, 0, 0, 1, 0, 0);
 	        }
 	    };
 
@@ -1753,6 +1785,48 @@
 
 /***/ },
 /* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(4);
+
+	var Friction = (function() {
+	    var System = function(window) {
+	        this.window = window;
+	        this.keysDown = { };
+	    };
+
+	    System.prototype = {
+	        setUp: function() {
+
+	        },
+	        update: function(entities) {
+	            var process = this.process.bind(this);
+	            entities.forEach(function(entity) {
+	                var velocity = entity.getComponent('velocity');
+	                var friction = entity.getComponent('friction');
+	                if (!velocity || !friction) return;
+
+	                process(entity, { velocity: velocity, friction: friction })
+	            });
+
+	            this.keysDown = {};
+	        },
+	        process: function(entity, components) {
+	            var velocity = components.velocity;
+	            var friction = components.friction;
+
+	            velocity.x *= friction.resistance;
+	            velocity.y *= friction.resistance;
+	        }
+	    };
+
+	    return System;
+	})();
+
+	module.exports = Friction;
+
+/***/ },
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Entity = (function() {
@@ -1784,7 +1858,7 @@
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var EntityManager = (function () {
@@ -1808,7 +1882,7 @@
 	module.exports = EntityManager;
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var SequentialIdGenerator = function() {
@@ -1823,7 +1897,7 @@
 	module.exports = SequentialIdGenerator;
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);
@@ -1851,7 +1925,7 @@
 	module.exports = Manager;
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);
@@ -1860,28 +1934,34 @@
 	    'Rendered',
 	    'Velocity',
 	    'Location',
-	    'Keyboard'
+	    'Acceleration',
+	    'Keyboard',
+	    'Friction'
 	], function(tag) {
-	    return [tag, __webpack_require__(13)("./" + tag.toLowerCase())];
+	    return [tag, __webpack_require__(14)("./" + tag.toLowerCase())];
 	}));
 
 	module.exports = allComponents;
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./index": 12,
-		"./index.js": 12,
-		"./keyboard": 14,
-		"./keyboard.js": 14,
-		"./location": 15,
-		"./location.js": 15,
-		"./rendered": 16,
-		"./rendered.js": 16,
-		"./velocity": 17,
-		"./velocity.js": 17
+		"./acceleration": 15,
+		"./acceleration.js": 15,
+		"./friction": 16,
+		"./friction.js": 16,
+		"./index": 13,
+		"./index.js": 13,
+		"./keyboard": 17,
+		"./keyboard.js": 17,
+		"./location": 18,
+		"./location.js": 18,
+		"./rendered": 19,
+		"./rendered.js": 19,
+		"./velocity": 20,
+		"./velocity.js": 20
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -1894,33 +1974,56 @@
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 13;
+	webpackContext.id = 14;
 
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(18);
-
-	module.exports = Components.create('keyboard', {});
 
 /***/ },
 /* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(21);
 
-	module.exports = Components.create('location', {
-	    x: 0,
-	    y: 0
+	module.exports = Components.create('acceleration', {
+	    power: 0.2,
+	    maxSpeed: 5,
+	    turningSpeed: Math.PI / 180
 	});
 
 /***/ },
 /* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(21);
+
+	module.exports = Components.create('friction', {
+	    resistance: 0.9
+	});
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(21);
+
+	module.exports = Components.create('keyboard', {});
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(21);
+
+	module.exports = Components.create('location', {
+	    x: 0,
+	    y: 0,
+	    rotation: 0
+	});
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(21);
 
 	module.exports = Components.create('rendered', {
 	    color: 'red',
@@ -1929,10 +2032,10 @@
 	});
 
 /***/ },
-/* 17 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(21);
 
 	module.exports = Components.create('velocity', {
 	    x: 0,
@@ -1940,7 +2043,7 @@
 	});
 
 /***/ },
-/* 18 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);

@@ -1,2 +1,2 @@
-window.context = (_message, body) ->
-  body()
+window.context = -> (_message, body) ->
+    body()

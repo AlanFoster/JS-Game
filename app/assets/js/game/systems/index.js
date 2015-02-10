@@ -3,6 +3,7 @@ var SystemManager = require('./../../core/systems/manager');
 var KeyboardSystem = require('./keyboard');
 var MovementSystem = require('./movement');
 var RenderSystem = require('./render');
+var FrictionSystem = require('./friction');
 
 var Components = require('./../components/index')
 var RandomEntityCreatorSystem = (function() {
@@ -40,9 +41,9 @@ var RandomEntityCreatorSystem = (function() {
                                                 y: random(0, 500)
                                             }));
 
-            if(Math.random() > 0.5) {
-                entity.addComponent(new Components.Keyboard({}))
-            }
+            entity.addComponent(new Components.Keyboard({}))
+            entity.addComponent(new Components.Acceleration({}))
+                  .addComponent(new Components.Friction({}))
         }
     };
 
@@ -54,6 +55,7 @@ module.exports = {
     create: function(renderTarget) {
         var systemManager = new SystemManager([
             new KeyboardSystem(window).setUp(),
+            new FrictionSystem(),
             new MovementSystem(),
             new RandomEntityCreatorSystem(entityManager),
             new RenderSystem(renderTarget).setUp()

@@ -9,65 +9,60 @@ describe 'Movement System', ->
     expect(subject).toBeTruthy()
 
   describe '#update', ->
-    instance = new subject()
+    beforeEach ->
+      @instance = new subject()
+
     it 'exists', ->
-      expect(instance.update).toBeDefined()
+      expect(@instance.update).toBeDefined()
 
-    context 'when no entities are supplied', ->
+    describe 'when no entities are supplied', ->
       it 'does not cause an error', ->
-        expect(-> instance.update []).not.toThrow()
+        expect(=> @instance.update []).not.toThrow()
 
-    context 'entities with components supplied', ->
-      location = new Location()
-      velocity = new Velocity()
-      validEntity = new Entity('valid').addComponent(location).addComponent(velocity).addComponent(new Rendered())
-      invalidEntity1 = new Entity('invalid1').addComponent(new Velocity())
-      invalidEntity2 = new Entity('invalid2').addComponent(new Location())
+    describe 'entities with components supplied', ->
 
       beforeEach ->
-        spyOn instance, 'process'
+        @instance = new subject()
+        @location = new Location()
+        @velocity = new Velocity()
+        @validEntity = new Entity('valid').addComponent(@location).addComponent(@velocity).addComponent(new Rendered())
+        @invalidEntity1 = new Entity('invalid1').addComponent(new Velocity())
+        @invalidEntity2 = new Entity('invalid2').addComponent(new Location())
+
+        spyOn @instance, 'process'
         entities = [
-          invalidEntity1
-          validEntity
-          invalidEntity2
+          @invalidEntity1
+          @validEntity
+          @invalidEntity2
         ]
-        instance.update entities
+        @instance.update entities
 
       it 'called processed the required entities', ->
         expectedComponents =
-          location: location
-          velocity: velocity
+          location: @location
+          velocity: @velocity
 
-        expect(instance.process).toHaveBeenCalledWith validEntity, expectedComponents
+        expect(@instance.process).toHaveBeenCalledWith @validEntity, expectedComponents
 
       it 'did not process invalid entity 1', ->
-        expect(instance.process).not.toHaveBeenCalledWith invalidEntity1, jasmine.any(Object)
+        expect(@instance.process).not.toHaveBeenCalledWith @invalidEntity1, jasmine.any(Object)
 
       it 'did not process invalid entity 2', ->
-        expect(instance.process).not.toHaveBeenCalledWith invalidEntity2, jasmine.any(Object)
+        expect(@instance.process).not.toHaveBeenCalledWith @invalidEntity2, jasmine.any(Object)
 
   describe '#process', ->
-    instance = new subject()
-    entity = undefined
     beforeEach ->
-      velocity = new Velocity(
-        x: 2
-        y: 3
-      )
-      location = new Location(
-        x: 0
-        y: 0
-      )
-      entity = new Entity('id').addComponent(location).addComponent(velocity)
-      instance.process entity,
-        velocity: velocity
-        location: location
+      @instance = new subject()
+      @velocity = new Velocity x: 2, y: 3
+      @location = new Location x: 0, y: 0
 
-    afterEach ->
-      entity = undefined
+      @entity = new Entity('id').addComponent(@location).addComponent(@velocity)
+      @instance.process @entity,
+                        velocity: @velocity
+                        location: @location
 
     it 'increases the x position by the y velocity', ->
-      expect(entity.getComponent('location').x).toEqual 2
+      expect(@entity.getComponent('location').x).toEqual 2
 
     it 'increases the y position by the y velocity', ->
-      expect(entity.getComponent('location').y).toEqual 3
+      expect(@entity.getComponent('location').y).toEqual 0

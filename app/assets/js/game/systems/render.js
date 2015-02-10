@@ -34,10 +34,10 @@ var Render = (function () {
                 var location = entity.getComponent('location');
                 if (!rendered || !location) return;
 
-                process(entity, { rendered: rendered, location: location })
+                process(entity, {rendered: rendered, location: location})
             })
         },
-        preprocess: function(entities) {
+        preprocess: function (entities) {
             var context = this.context;
 
             context.fillStyle = '#000';
@@ -51,7 +51,22 @@ var Render = (function () {
 
             context.fillStyle = rendered.color;
 
-            context.fillRect(location.x, location.y, rendered.width, rendered.height);
+            var center = {
+                x: location.x + (rendered.width / 2),
+                y: location.y + (rendered.height / 2)
+            };
+
+            var drawAt = {
+                x: -rendered.width / 2,
+                y: -rendered.height / 2
+            };
+
+            context.translate(center.x, center.y);
+
+            context.rotate(location.rotation);
+            context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
+
+            context.setTransform(1, 0, 0, 1, 0, 0);
         }
     };
 

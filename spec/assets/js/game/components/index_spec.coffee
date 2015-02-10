@@ -6,12 +6,14 @@ describe 'Components Index', ->
     'Rendered',
     'Velocity',
     'Location',
-    'Keyboard'
+    'Acceleration',
+    'Keyboard',
+    'Friction'
   ]
 
   it 'exposes components', ->
     expect(Object.keys(subject)).toEqual(expectedEntities)
 
   it 'assigns all values', ->
-    _.each(subject, (_key, value) ->
-      expect(value).toBe jasmine.any(Function)
+    _.each subject, (_key, value) ->
+      expect(value).toMatch(jasmine.any(Function))

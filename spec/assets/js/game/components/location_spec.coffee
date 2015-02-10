@@ -9,13 +9,17 @@ describe 'location component', ->
     context 'all values supplied', ->
       instance = new subject(
         x: 10
-        y: 15
+        y: 15,
+        rotation: Math.PI / 2
       )
       it 'stores x location', ->
         expect(instance.x).toBe 10
 
       it 'stores y', ->
         expect(instance.y).toBe 15
+
+      it 'stores rotation', ->
+        expect(instance.rotation).toBe Math.PI / 2
 
       it 'stores the component tag', ->
         expect(instance.tag).toBe expectedTagName
@@ -27,6 +31,9 @@ describe 'location component', ->
 
       it 'defaults y position', ->
         expect(instance.y).toBe 0
+
+      it 'defaults y position', ->
+        expect(instance.rotation).toBe 0
 
       it 'stores the component tag', ->
         expect(instance.tag).toBe expectedTagName

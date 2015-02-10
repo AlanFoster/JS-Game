@@ -1,4 +1,4 @@
-var _ = require('underscore')
+var _ = require('underscore');
 
 var Keyboard = (function() {
     var System = function(window) {
@@ -14,45 +14,60 @@ var Keyboard = (function() {
         }
     };
 
+    var keyMappings = {
+        37: 'left',
+        38: 'up',
+        39: 'right',
+        40: 'down'
+    };
+
     System.prototype = {
         setUp: function() {
-            this.window.onkeydown = this.handleKey.bind(this);
+            this.window.onkeydown = this.window.onkeyup = this.handleKey.bind(this);
             return this;
         },
         handleKey: function(event) {
             var keyCode = event.keyCode || event.which;
+            var key = keyMappings[keyCode];
+            if (!key) return;
 
-            this.keysDown.left = keyCode == 37;
-            this.keysDown.up = keyCode == 38;
-            this.keysDown.right = keyCode == 39;
-            this.keysDown.down = keyCode == 40;
+            this.keysDown[key] = event.type == 'keydown';
         },
         update: function(entities) {
             var process = this.process.bind(this);
             entities.forEach(function(entity) {
                 var velocity = entity.getComponent('velocity');
+                var location = entity.getComponent('location');
                 var keyboard = entity.getComponent('keyboard');
-                if (!velocity || !keyboard) return;
+                var acceleration = entity.getComponent('acceleration');
+                if (!velocity || !keyboard || !acceleration) return;
 
-                process(entity, { velocity: velocity, keyboard: keyboard })
+                process(entity, { velocity: velocity, keyboard: keyboard, location: location, acceleration: acceleration })
             });
 
-            this.keysDown = {};
         },
         process: function(entity, components) {
             var velocity = components.velocity;
-            var velocityUpdates = [];
-            var power = 0.2;
-            var powerClamp = 2;
+            var location = components.location;
+            var acceleration = components.acceleration;
 
-            if(this.keysDown.left) velocityUpdates.push({ x: -power, y: 0 });
-            if(this.keysDown.up) velocityUpdates.push({ x: 0, y: -power });
-            if(this.keysDown.right) velocityUpdates.push({ x: power, y: 0 });
-            if(this.keysDown.down) velocityUpdates.push({ x: 0, y: power });
+            var velocityUpdates = [];
+
+            var power = acceleration.power;
+            var maxSpeed = acceleration.maxSpeed;
+            var rotation = acceleration.turningSpeed;
+
+            if(this.keysDown.left) velocityUpdates.push({ x: 0, y: 0, rotation: -rotation });
+            if(this.keysDown.right) velocityUpdates.push({ x: 0, y: 0, rotation: rotation });
+
+            if(this.keysDown.up) velocityUpdates.push({ x: power, y: power, rotation: 0 });
+            if(this.keysDown.down) velocityUpdates.push({ x: -power, y: -power, rotation: 0 });
 
             _.each(velocityUpdates, function(update) {
-                velocity.x = clamp(velocity.x + update.x)({ from : -powerClamp, to: powerClamp });
-                velocity.y = clamp(velocity.y + update.y)({ from : -powerClamp, to: powerClamp });
+                velocity.x = clamp(velocity.x + update.x)({ from : -maxSpeed, to: maxSpeed });
+                velocity.y = clamp(velocity.y + update.y)({ from : -maxSpeed, to: maxSpeed });
+
+                location.rotation += update.rotation
             });
         }
     };
