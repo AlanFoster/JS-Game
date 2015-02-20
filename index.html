@@ -103,7 +103,7 @@
                 <span class="bulletHeading">Systems</span>
                 <span class="fragment description">Rendering</span>
                 <span class="fragment description"> - Movement</span>
-                <span class="fragment description"> - etc</span>
+                <span class="fragment description"> - Collision</span>
             </li>
         </ul>
     </section>
@@ -134,90 +134,25 @@ var Health = function(currentHealth, maximumHealth) {
 var healthComponent = new Health(50, 100); // 50% health
         </code></pre>
     </section>
-    <section>
-        <h1>Keeping Track...</h1>
-
-        <pre><code data-trim contenteditable>
-var Location =
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var locationComponent = new Location(100, 100);
-
-console.log(locationComponent.tag); // A unique component identifier!
-        </code></pre>
-    </section>
 
     <section>
         <h1>Keeping Track...</h1>
 
         <pre ><code data-trim contenteditable>
-// Immediately Invoked Function Expression
+<p class="fragment">// Immediately Invoked Function Expression</p>
 var Location = (function() {
-
-
-
-
-
-
-
-
-
-    return Component;
-})();
-
-var locationComponent = new Location(100, 100);
-</code></pre>
-    </section>
-
-        <section>
-        <h1>Keeping Track...</h1>
-
-        <pre ><code data-trim contenteditable>
-// Immediately Invoked Function Expression
-var Location = (function() {
+    <p class="fragment">
     var Component = function(x, y) {
         this.x = x;
         this.y = y;
     };
+    </p>
 
-
-
-
-
-
-    return Component;
-})();
-
-var locationComponent = new Location(100, 100);
-        </code></pre>
-    </section>
-
-    <section>
-        <h1>Keeping Track...</h1>
-
-        <pre ><code data-trim contenteditable>
-// Immediately Invoked Function Expression
-var Location = (function() {
-    var Component = function(x, y) {
-        this.x = x;
-        this.y = y;
-    };
-
+    <p class="fragment">
     Component.prototype = {
         tag: 'location'
     };
+    </p>
 
     return Component;
 })();
@@ -228,9 +163,17 @@ console.log(locationComponent.tag); // location
     </section>
 
         <section>
-        <h1>One step further</h1>
+        <h1>DRY</h1>
 
         <pre ><code data-trim contenteditable>
+var Location = createComponent('location', {
+    x: 0, // Field name => Default Value
+    y: 0
+});
+
+var locationComponent = new Location({ x: 100, y: 100 });
+
+// Generic way to create data components
 var createComponent = function(tag, properties) {
     var Component = function(instanceProperties) {
         instanceProperties = instanceProperties || {};
@@ -249,24 +192,221 @@ var createComponent = function(tag, properties) {
 
     return Component;
 };
-
-var Location = Components.create('location', {
-    x: 0,
-    y: 0
-});
-
-var locationComponent = new Location({ x: 100, y: 100 });
         </code></pre>
     </section>
 </section>
 
 <section>
+<section>
     <h1>Entities</h1>
+
+    <ul>
+        <li>Unique Identifier</li>
+        <li>Maintain Components</li>
+    </ul>
 <pre  class="fragment"><code data-trim contenteditable>
 var Entity = function(id) {
-    
-}
-</pre></code>
+    this.id = id;
+    this.components = {}; // Map tag to component instance
+};
+</code></pre>
+</section>
+
+    <section>
+        <h1>Entity Operations</h1>
+
+<pre  class="fragment"><code data-trim contenteditable>
+Entity.prototype = {
+    addComponent: function(component) {
+        this.components[component.tag] = component;
+        return this;
+    },
+    getComponent: function(tag) {
+        return this.components[tag];
+    },
+    removeComponent: function(tag) {
+        delete this.components[tag];
+    },
+    toString: function() {
+        return JSON.stringify(this, null, 4)
+    }
+};
+</code></pre>
+</section>
+
+
+<section>
+    <h1>Adding Components...</h1>
+
+<pre><code data-trim contenteditable>
+var entity = new Entity('player')
+entity.addComponent(new Components.Rendered({
+          width: random(0, 60),
+          height: random(0, 60),
+          color: randomColor()
+      }))
+      .addComponent(new Components.Velocity({
+          x: random(-3, 3),
+          y: random(-3, 3)
+      }))
+      .addComponent(new Components.Location({
+          x: random(0, world.width),
+          y: random(0, world.height)
+      }));
+</code></pre>
+    </section>
+
+</section>
+
+<section>
+
+    <section>
+        <h1>Systems</h1>
+
+
+        <p class="fragment">Find all the entities, with all the components we care about</p>
+        <p class="fragment">... Process them!</p>
+
+    </section>
+
+    <section>
+        <h1>Movement</h1>
+
+        <p>
+            <span class="fragment">We require... </span>
+            <span class="fragment description">a position </span>
+            <span class="fragment">... a velocity</span>
+        </p>
+
+    <pre class="fragment"><code data-trim contenteditable>
+    var MovementSystem = (function() {
+        var System = function() {
+        };
+        System.prototype = {
+            update: function(entities) {
+                extract(entities).withComponents(this.components)
+                                 .process(this.process)
+            },
+            components: ['position', 'velocity'],
+            process: function(entity, components) {
+                var position = components.position;
+                var velocity = components.velocity;
+                position.x += velocity.x;
+                position.y += velocity.y;
+            }
+        };
+        return System;
+    })();
+    </code></pre>
+
+    </section>
+
+<section>
+    <h2> System Manager</h2>
+    <p class="fragment">Register your systems</p>
+    <pre class="fragment"><code data-trim contenteditable>
+var systemManager = new SystemManager([
+    new MovementSystem(),
+    new RandomEntityCreatorSystem(entityManager),
+    new RenderSystem()
+]);
+
+var Manager = (function() {
+    var Manager = function(systems) {
+        this.systems = systems || []
+    };
+
+    Manager.prototype = {
+        register: function(systems) {
+            systems = _.isArray(systems) ? systems : [systems];
+            this.systems = this.systems.concat(systems)
+        },
+        update: function(entities) {
+            _.each(this.systems, function(system) {
+                system.update(entities);
+            });
+        }
+    };
+
+    return Manager;
+})();
+    </code></pre>
+</section>
+</section>
+
+<section>
+<section>
+    <h1>Game loop</h1>
+    <p class="fragment"><img data-src="app/assets/images/game_loop.png" class="plain"></p>
+</section>
+
+<section>
+    <h2>Goal</h2>
+    <p>Aim to hit a required FPS</p>
+
+    <ul>
+        <li class="fragment">
+            <span class="bulletHeading">window.setInterval</span>
+            <span class="fragment description" >Run code every x ms</span>
+        </li>
+        <li class="fragment">
+            <span class="bulletHeading">window.setInterval</span>
+            <span class="fragment description" >Run code <strong>once</strong> x ms</span>
+        </li>
+        <li class="fragment">
+            <span class="bulletHeading">window.requestAnimationFrame</span>
+            <span class="fragment description" >Awesome</span>
+        </li>
+    </ul>
+</section>
+
+<section>
+    <h2>With ECS</h2>
+    <p>Slightly different...</p>
+
+    <pre class="fragment"><code data-trim contenteditable>
+        systemManager.update(entities);
+    </code></pre>
+</section>
+</section>
+
+<section>
+    <section>
+        <h2>Project Tech</h2>
+        <ul>
+            <li class="fragment">
+                <span class="bulletHeading">Webpack</span>
+                <span class="fragment description" >Module System</span>
+                <span class="fragment description" >CommonJS + AMD</span>
+            </li>
+
+            <li class="fragment">
+                <span class="bulletHeading">Gulp</span>
+                <span class="fragment description" >Bower</span>
+            </li>
+
+            <li class="fragment">
+                <span class="bulletHeading">Bower</span>
+            </li>
+
+            <li class="fragment">
+                <span class="bulletHeading">Karma</span>
+            </li>
+
+            <li class="fragment">
+                <span class="bulletHeading">Jasmine</span>
+            </li>
+
+
+            <li class="fragment">
+                <span class="bulletHeading">CoffeeScript</span>
+            </li>
+
+            <span class="fragment description" >Karma</span>
+            <span class="fragment description" >Jasmine</span>
+            <span class="fragment description" >CoffeeScript</span>
+        </ul>
+    </section>
 </section>
 
                 <section>
