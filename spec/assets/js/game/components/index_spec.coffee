@@ -8,7 +8,9 @@ describe 'Components Index', ->
     'Location',
     'Acceleration',
     'Keyboard',
-    'Friction'
+    'Friction',
+    'Camera',
+    'Bot'
   ]
 
   it 'exposes components', ->

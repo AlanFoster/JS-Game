@@ -23,10 +23,25 @@ var Render = (function () {
 
             return this;
         },
+        getCamera: function(entities) {
+            var entityWithCamera = _.find(entities, function(entity) {
+                return entity.getComponent('camera')
+            });
+
+            var location = entityWithCamera.getComponent('location');
+            var rendered = entityWithCamera.getComponent('rendered');
+            var camera = {
+                x: location.x + (rendered.width / 2),
+                y: location.y + (rendered.height / 2)
+            };
+
+            return camera;
+        },
         update: function (entities) {
             if (!this.context) return;
 
             this.preprocess(entities);
+            var camera = this.getCamera(entities);
 
             var process = this.process.bind(this);
             entities.forEach(function (entity) {
@@ -34,7 +49,7 @@ var Render = (function () {
                 var location = entity.getComponent('location');
                 if (!rendered || !location) return;
 
-                process(entity, {rendered: rendered, location: location})
+                process(entity, {rendered: rendered, location: location}, camera)
             })
         },
         preprocess: function (entities) {
@@ -43,11 +58,22 @@ var Render = (function () {
             context.fillStyle = '#000';
             context.fillRect(0, 0, this.width, this.height);
         },
-        process: function (entity, components) {
+        process: function (entity, components, camera) {
             var rendered = components.rendered;
             var location = components.location;
 
             var context = this.context;
+
+            context.save();
+
+            var foo = entity.getComponent('bot');
+            if(foo && foo.target) {
+                var x = foo.target.x;
+                var y = foo.target.y;
+
+                context.fillStyle = 'white'
+                context.fillRect(x, y, 5, 5);
+            }
 
             context.fillStyle = rendered.color;
 
@@ -57,8 +83,8 @@ var Render = (function () {
             };
 
             var drawAt = {
-                x: -rendered.width / 2,
-                y: -rendered.height / 2
+                x: -(rendered.width / 2),
+                y: -(rendered.height / 2)
             };
 
             context.translate(center.x, center.y);
@@ -66,7 +92,7 @@ var Render = (function () {
             context.rotate(location.rotation);
             context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
 
-            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.restore();
         }
     };
 

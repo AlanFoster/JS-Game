@@ -60,9 +60,9 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Entity = __webpack_require__(9);
-	var EntityManager = __webpack_require__(10);
-	var IdGenerator = __webpack_require__(11);
+	var Entity = __webpack_require__(10);
+	var EntityManager = __webpack_require__(11);
+	var IdGenerator = __webpack_require__(12);
 
 	module.exports = {
 	    entityManager: new EntityManager(Entity, new IdGenerator())
@@ -74,13 +74,14 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var entityManager = __webpack_require__(1).entityManager;
-	var SystemManager = __webpack_require__(12);
+	var SystemManager = __webpack_require__(13);
 	var KeyboardSystem = __webpack_require__(5);
 	var MovementSystem = __webpack_require__(6);
 	var RenderSystem = __webpack_require__(7);
 	var FrictionSystem = __webpack_require__(8);
+	var BotSystem = __webpack_require__(9);
 
-	var Components = __webpack_require__(13)
+	var Components = __webpack_require__(14)
 	var RandomEntityCreatorSystem = (function() {
 	    var System = function(entityManager) {
 	        this.entityManager = entityManager;
@@ -97,14 +98,37 @@
 	            this.callCount++;
 	            if(this.callCount != 1) return;
 
+
 	            var colors = [
 	                'red', 'white', 'blue'
 	            ];
 
+
+
+
+	            //this.entityManager.createEntity()
+	            //    .addComponent(new Components.Rendered({
+	            //        width: 30,
+	            //        height: 30,
+	            //        color: colors[random(0, colors.length)]
+	            //    }))
+	            //    .addComponent(new Components.Velocity({
+	            //        x: 0,
+	            //        y: 0
+	            //    }))
+	            //    .addComponent(new Components.Location({
+	            //        x: 100,
+	            //        y: 120
+	            //    }))
+	            //    .addComponent(new Components.Bot({
+	            //
+	            //    }));
+
+
 	            var entity = this.entityManager.createEntity()
 	                                            .addComponent(new Components.Rendered({
-	                                                width: random(0, 60),
-	                                                height: random(0, 60),
+	                                                width: 30,
+	                                                height: 30,
 	                                                color: colors[random(0, colors.length)]
 	                                            }))
 	                                            .addComponent(new Components.Velocity({
@@ -112,13 +136,18 @@
 	                                                y: 0
 	                                            }))
 	                                            .addComponent(new Components.Location({
-	                                                x: random(0, 500),
-	                                                y: random(0, 500)
+	                                                x: 0,
+	                                                y: 0
 	                                            }));
 
 	            entity.addComponent(new Components.Keyboard({}))
 	            entity.addComponent(new Components.Acceleration({}))
 	                  .addComponent(new Components.Friction({}))
+	                  .addComponent(new Components.Camera({}))
+	                .addComponent(new Components.Bot({
+
+	                }));
+
 	        }
 	    };
 
@@ -130,6 +159,7 @@
 	    create: function(renderTarget) {
 	        var systemManager = new SystemManager([
 	            new KeyboardSystem(window).setUp(),
+	            new BotSystem(),
 	            new FrictionSystem(),
 	            new MovementSystem(),
 	            new RandomEntityCreatorSystem(entityManager),
@@ -1731,10 +1761,25 @@
 
 	            return this;
 	        },
+	        getCamera: function(entities) {
+	            var entityWithCamera = _.find(entities, function(entity) {
+	                return entity.getComponent('camera')
+	            });
+
+	            var location = entityWithCamera.getComponent('location');
+	            var rendered = entityWithCamera.getComponent('rendered');
+	            var camera = {
+	                x: location.x + (rendered.width / 2),
+	                y: location.y + (rendered.height / 2)
+	            };
+
+	            return camera;
+	        },
 	        update: function (entities) {
 	            if (!this.context) return;
 
 	            this.preprocess(entities);
+	            var camera = this.getCamera(entities);
 
 	            var process = this.process.bind(this);
 	            entities.forEach(function (entity) {
@@ -1742,7 +1787,7 @@
 	                var location = entity.getComponent('location');
 	                if (!rendered || !location) return;
 
-	                process(entity, {rendered: rendered, location: location})
+	                process(entity, {rendered: rendered, location: location}, camera)
 	            })
 	        },
 	        preprocess: function (entities) {
@@ -1751,11 +1796,22 @@
 	            context.fillStyle = '#000';
 	            context.fillRect(0, 0, this.width, this.height);
 	        },
-	        process: function (entity, components) {
+	        process: function (entity, components, camera) {
 	            var rendered = components.rendered;
 	            var location = components.location;
 
 	            var context = this.context;
+
+	            context.save();
+
+	            var foo = entity.getComponent('bot');
+	            if(foo && foo.target) {
+	                var x = foo.target.x;
+	                var y = foo.target.y;
+
+	                context.fillStyle = 'white'
+	                context.fillRect(x, y, 5, 5);
+	            }
 
 	            context.fillStyle = rendered.color;
 
@@ -1765,8 +1821,8 @@
 	            };
 
 	            var drawAt = {
-	                x: -rendered.width / 2,
-	                y: -rendered.height / 2
+	                x: -(rendered.width / 2),
+	                y: -(rendered.height / 2)
 	            };
 
 	            context.translate(center.x, center.y);
@@ -1774,7 +1830,7 @@
 	            context.rotate(location.rotation);
 	            context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
 
-	            context.setTransform(1, 0, 0, 1, 0, 0);
+	            context.restore();
 	        }
 	    };
 
@@ -1829,6 +1885,121 @@
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var MathHelpers = __webpack_require__(15);
+
+	var Movement = (function () {
+	    var System = function () {
+
+	    };
+
+	    var randomBotState = function () {
+	        var states = [
+	            //'neutral',
+	            'roam'
+	        ];
+
+	        return states[~~(Math.random() * states.length)];
+	    };
+
+	    var changeState = function (bot) {
+	        bot.state = randomBotState()
+	    };
+
+	    var rotateTowards = function (from, to) {
+	        var angle = MathHelpers.angleBetween(to, from);
+	        var angleDifference = angle - from.rotation;
+
+	        var sensitivity = Math.PI / 120;
+
+	        var newRotation = Math.abs(angleDifference) >= sensitivity ? angleDifference : from.rotation;
+
+	        return newRotation;
+	    };
+
+	    var rotateTowardsSmoothly = function(from, to) {
+	        var newRotation = rotateTowards(from, to);
+	        var oldRotation = from.rotation;
+
+	        var maximumTurningDistance = Math.PI / 180;
+	        var turnLeft = oldRotation > newRotation + Math.PI || oldRotation < newRotation
+	        var smoothRotation = turnLeft ? maximumTurningDistance : -maximumTurningDistance;
+
+	        return oldRotation + smoothRotation;
+	    };
+
+	    System.prototype = {
+	        update: function (entities) {
+	            var process = this.process;
+	            entities.forEach(function (entity) {
+	                var location = entity.getComponent('location');
+	                var velocity = entity.getComponent('velocity');
+	                var bot = entity.getComponent('bot');
+
+	                if (!location || !velocity || !bot) return;
+
+	                process(entity, {location: location, velocity: velocity, bot: bot})
+	            })
+	        },
+	        process: function (entity, components) {
+	            var location = components.location;
+	            var velocity = components.velocity;
+	            var bot = components.bot;
+
+	            switch (bot.state) {
+	                case 'neutral':
+	                    velocity.x = 0;
+	                    velocity.y = 0;
+	                    bot.state = 'roam';
+
+	                    break;
+
+	                case 'roam':
+	                    bot.target = {
+	                        //x: ~~(Math.random() * 400),
+	                        //y: ~~(Math.random() * 400)
+	                        x: 200,
+	                        y: 200
+	                    };
+
+	                    //velocity.x = 2;
+	                    //velocity.y = 2;
+
+	                    bot.state = 'roaming';
+	                    break;
+
+	                case 'roaming':
+	                    location.rotation = rotateTowardsSmoothly(location, bot.target);
+
+	                    //bot.target.x = 100 + ((bot.target.x + 1) % 200);
+
+	                    //location.x += velocity.x * Math.cos(location.rotation);
+	                    //location.y += velocity.y * Math.sin(location.rotation);
+
+	                    var distanceFromTarget = MathHelpers.distanceBetween(location, bot.target);
+	                    if(distanceFromTarget < 20) {
+	                        changeState(bot);
+	                    }
+
+	                    //bot.roamCount = (bot.roamCount + 1) % 200;
+	                    //if (bot.roamCount == 0) {
+	                    //    changeState(bot);
+	                    //}
+
+	                    break;
+	            }
+
+	        }
+	    };
+
+	    return System;
+	})();
+
+	module.exports = Movement;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
 	var Entity = (function() {
 	    var Entity = function(id) {
 	        this.id = id;
@@ -1858,7 +2029,7 @@
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var EntityManager = (function () {
@@ -1882,7 +2053,7 @@
 	module.exports = EntityManager;
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var SequentialIdGenerator = function() {
@@ -1897,7 +2068,7 @@
 	module.exports = SequentialIdGenerator;
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);
@@ -1925,7 +2096,7 @@
 	module.exports = Manager;
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);
@@ -1936,32 +2107,63 @@
 	    'Location',
 	    'Acceleration',
 	    'Keyboard',
-	    'Friction'
+	    'Friction',
+	    'Camera',
+	    'Bot'
 	], function(tag) {
-	    return [tag, __webpack_require__(14)("./" + tag.toLowerCase())];
+	    return [tag, __webpack_require__(16)("./" + tag.toLowerCase())];
 	}));
 
 	module.exports = allComponents;
 
 /***/ },
-/* 14 */
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = {
+	    twoPI: Math.PI * 2,
+	    angleBetween: function(from, to) {
+	        var x = from.x - to.x;
+	        var y = from.y - to.y;
+	        return Math.atan2(y, x);
+	    },
+	    normalizeRadians: function(value) {
+	        var twoPI = this.twoPI;
+	        var normalizedRadian = value - Math.floor(value / twoPI) * twoPI;
+
+	        return normalizedRadian;
+	    },
+	    distanceBetween: function(from, to) {
+	        var xSquared = Math.pow(from.x - to.x, 2);
+	        var ySquared = Math.pow(from.y - to.y, 2);
+
+	        return Math.sqrt(xSquared + ySquared);
+	    }
+	};
+
+/***/ },
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./acceleration": 15,
-		"./acceleration.js": 15,
-		"./friction": 16,
-		"./friction.js": 16,
-		"./index": 13,
-		"./index.js": 13,
-		"./keyboard": 17,
-		"./keyboard.js": 17,
-		"./location": 18,
-		"./location.js": 18,
-		"./rendered": 19,
-		"./rendered.js": 19,
-		"./velocity": 20,
-		"./velocity.js": 20
+		"./acceleration": 17,
+		"./acceleration.js": 17,
+		"./bot": 18,
+		"./bot.js": 18,
+		"./camera": 19,
+		"./camera.js": 19,
+		"./friction": 20,
+		"./friction.js": 20,
+		"./index": 14,
+		"./index.js": 14,
+		"./keyboard": 21,
+		"./keyboard.js": 21,
+		"./location": 22,
+		"./location.js": 22,
+		"./rendered": 23,
+		"./rendered.js": 23,
+		"./velocity": 24,
+		"./velocity.js": 24
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -1974,14 +2176,14 @@
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 14;
+	webpackContext.id = 16;
 
 
 /***/ },
-/* 15 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(21);
+	var Components = __webpack_require__(25);
 
 	module.exports = Components.create('acceleration', {
 	    power: 0.2,
@@ -1990,40 +2192,91 @@
 	});
 
 /***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(21);
-
-	module.exports = Components.create('friction', {
-	    resistance: 0.9
-	});
-
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(21);
-
-	module.exports = Components.create('keyboard', {});
-
-/***/ },
 /* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(21);
+	var Components = __webpack_require__(25);
 
-	module.exports = Components.create('location', {
-	    x: 0,
-	    y: 0,
-	    rotation: 0
+	module.exports = Components.create('bot', {
+	    state: 'roam',
+	    counter: 0
 	});
 
 /***/ },
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(21);
+	var Components = __webpack_require__(25);
+
+	module.exports = Components.create('camera', {
+	});
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(25);
+
+	module.exports = Components.create('friction', {
+	    resistance: 0.9
+	});
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(25);
+
+	module.exports = Components.create('keyboard', {});
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(25);
+	var _ = __webpack_require__(4);
+	var MathHelper = __webpack_require__(15);
+
+	module.exports = (function() {
+	    var Component = function(values) {
+	        this.x = _.isUndefined(values.x) ? 0 : values.x;
+	        this.y = _.isUndefined(values.y) ? 0 : values.y;
+	        this._rotation = _.isUndefined(values.rotation) ?  0 : values._rotation;
+
+	        Object.defineProperty(this, 'rotation', {
+	            set: function(value) {
+	                this._rotation = MathHelper.normalizeRadians(value);
+	            },
+	            get: function() {
+	                return this._rotation;
+	            }
+	        });
+	    };
+
+	    Component.prototype = {
+	        tag: 'location',
+	        toString: function() {
+	            return JSON.stringify(this, null, 4)
+	        }
+	    };
+
+	    return Component;
+	})();
+
+
+	//
+	//module.exports = Components.create('location', {
+	//    x: 0,
+	//    y: 0,
+	//    rotation: 0
+	//});
+
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(25);
 
 	module.exports = Components.create('rendered', {
 	    color: 'red',
@@ -2032,10 +2285,10 @@
 	});
 
 /***/ },
-/* 20 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(21);
+	var Components = __webpack_require__(25);
 
 	module.exports = Components.create('velocity', {
 	    x: 0,
@@ -2043,7 +2296,7 @@
 	});
 
 /***/ },
-/* 21 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(4);
