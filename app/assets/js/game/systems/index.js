@@ -19,7 +19,7 @@ var RandomEntityCreatorSystem = (function() {
     };
 
     System.prototype = {
-        update: function(entities) {
+        update: function(entities, world) {
             this.callCount++;
             if(this.callCount != 1) return;
 
@@ -28,8 +28,7 @@ var RandomEntityCreatorSystem = (function() {
                 'red', 'white', 'blue'
             ];
 
-
-
+            var assetManager = world.assetManager;
 
             //this.entityManager.createEntity()
             //    .addComponent(new Components.Rendered({
@@ -52,9 +51,10 @@ var RandomEntityCreatorSystem = (function() {
 
             var entity = this.entityManager.createEntity()
                                             .addComponent(new Components.Rendered({
-                                                width: 30,
-                                                height: 30,
-                                                color: colors[random(0, colors.length)]
+                                                width: 66,
+                                                height: 66,
+                                                //color: colors[random(0, colors.length)]
+                                                graphic: assetManager.assets.player
                                             }))
                                             .addComponent(new Components.Velocity({
                                                 x: 0,
@@ -69,10 +69,9 @@ var RandomEntityCreatorSystem = (function() {
             entity.addComponent(new Components.Acceleration({}))
                   .addComponent(new Components.Friction({}))
                   .addComponent(new Components.Camera({}))
-                .addComponent(new Components.Bot({
+                  .addComponent(new Components.Bot({
 
-                }));
-
+                  }));
         }
     };
 
@@ -88,7 +87,7 @@ module.exports = {
             new FrictionSystem(),
             new MovementSystem(),
             new RandomEntityCreatorSystem(entityManager),
-            new RenderSystem(renderTarget).setUp()
+            new RenderSystem(renderTarget)
         ]);
 
         return systemManager;

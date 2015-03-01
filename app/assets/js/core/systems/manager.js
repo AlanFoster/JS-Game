@@ -10,9 +10,11 @@ var Manager = (function() {
             systems = _.isArray(systems) ? systems : [systems];
             this.systems = this.systems.concat(systems)
         },
-        update: function(entities) {
+        update: function(world) {
+            world.renderer.clear();
+
             _.each(this.systems, function(system) {
-                system.update(entities);
+                system.update(world.entityManager.entities, world);
             });
         }
     };

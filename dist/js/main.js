@@ -44,25 +44,81 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	window.onload = function() {
-	    var _ = __webpack_require__(4);
+	window.onload = function () {
+	    var _ = __webpack_require__(5);
 	    var entityManager = __webpack_require__(1).entityManager;
-	    var systemManager = __webpack_require__(2).create(document.body);
+	    var systemManager = __webpack_require__(2).create();
+	    var assetManager = __webpack_require__(4);
 	    var runner = __webpack_require__(3);
 
-	    runner.queue(function() {
-	        systemManager.update(entityManager.entities);
+	    var world = {
+	        entityManager: entityManager,
+	        assetManager: assetManager,
+
+	        size: {
+	            height: 600,
+	            width: 500
+	        }
+	    };
+
+	    world.renderer = new Renderer(document.body).setUp(world);
+
+	    assetManager.load([], function () {
+	        runner.queue(function () {
+	            systemManager.update(world);
+	        })
 	    })
 	};
+
+	var Renderer = (function () {
+	    var Renderer = function (target) {
+	        this.target = target;
+
+	        this.context = undefined;
+	    };
+
+	    Renderer.prototype = {
+	        setUp: function (world) {
+	            if (!this.target) return;
+
+	            this.size = world.size;
+
+	            var canvas = document.createElement('canvas');
+	            canvas.width = this.size.width;
+	            canvas.height = this.size.height;
+
+	            this.context = canvas.getContext('2d');
+
+	            this.target.innerHTML = '';
+	            this.target.appendChild(canvas);
+
+	            return this;
+	        },
+	        clear: function () {
+	            var context = this.context;
+
+	            context.clearRect(0, 0, this.size.width, this.size.height);
+	        },
+	        batch: function(drawingFunction) {
+	            var context = this.context;
+
+	            context.save();
+	            drawingFunction(context);
+	            context.restore();
+	        }
+	    };
+
+	    return Renderer;
+	})();
 
 
 /***/ },
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Entity = __webpack_require__(10);
-	var EntityManager = __webpack_require__(11);
-	var IdGenerator = __webpack_require__(12);
+	var Entity = __webpack_require__(12);
+	var EntityManager = __webpack_require__(13);
+	var IdGenerator = __webpack_require__(14);
 
 	module.exports = {
 	    entityManager: new EntityManager(Entity, new IdGenerator())
@@ -74,14 +130,14 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var entityManager = __webpack_require__(1).entityManager;
-	var SystemManager = __webpack_require__(13);
-	var KeyboardSystem = __webpack_require__(5);
-	var MovementSystem = __webpack_require__(6);
-	var RenderSystem = __webpack_require__(7);
-	var FrictionSystem = __webpack_require__(8);
-	var BotSystem = __webpack_require__(9);
+	var SystemManager = __webpack_require__(15);
+	var KeyboardSystem = __webpack_require__(6);
+	var MovementSystem = __webpack_require__(7);
+	var RenderSystem = __webpack_require__(8);
+	var FrictionSystem = __webpack_require__(9);
+	var BotSystem = __webpack_require__(10);
 
-	var Components = __webpack_require__(14)
+	var Components = __webpack_require__(16)
 	var RandomEntityCreatorSystem = (function() {
 	    var System = function(entityManager) {
 	        this.entityManager = entityManager;
@@ -94,7 +150,7 @@
 	    };
 
 	    System.prototype = {
-	        update: function(entities) {
+	        update: function(entities, world) {
 	            this.callCount++;
 	            if(this.callCount != 1) return;
 
@@ -103,8 +159,7 @@
 	                'red', 'white', 'blue'
 	            ];
 
-
-
+	            var assetManager = world.assetManager;
 
 	            //this.entityManager.createEntity()
 	            //    .addComponent(new Components.Rendered({
@@ -127,9 +182,10 @@
 
 	            var entity = this.entityManager.createEntity()
 	                                            .addComponent(new Components.Rendered({
-	                                                width: 30,
-	                                                height: 30,
-	                                                color: colors[random(0, colors.length)]
+	                                                width: 66,
+	                                                height: 66,
+	                                                //color: colors[random(0, colors.length)]
+	                                                graphic: assetManager.assets.player
 	                                            }))
 	                                            .addComponent(new Components.Velocity({
 	                                                x: 0,
@@ -144,10 +200,9 @@
 	            entity.addComponent(new Components.Acceleration({}))
 	                  .addComponent(new Components.Friction({}))
 	                  .addComponent(new Components.Camera({}))
-	                .addComponent(new Components.Bot({
+	                  .addComponent(new Components.Bot({
 
-	                }));
-
+	                  }));
 	        }
 	    };
 
@@ -163,7 +218,7 @@
 	            new FrictionSystem(),
 	            new MovementSystem(),
 	            new RandomEntityCreatorSystem(entityManager),
-	            new RenderSystem(renderTarget).setUp()
+	            new RenderSystem(renderTarget)
 	        ]);
 
 	        return systemManager;
@@ -196,6 +251,15 @@
 
 /***/ },
 /* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(5);
+	var Loader = __webpack_require__(11);
+
+	module.exports = new Loader();
+
+/***/ },
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.7.0
@@ -1616,10 +1680,10 @@
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(4);
+	var _ = __webpack_require__(5);
 
 	var Keyboard = (function() {
 	    var System = function(window) {
@@ -1699,7 +1763,7 @@
 	module.exports = Keyboard;
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Movement = (function() {
@@ -1733,33 +1797,19 @@
 	module.exports = Movement;
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(4);
+	var _ = __webpack_require__(5);
 
 	var Render = (function () {
-	    var System = function (target) {
-	        this.target = target;
-	        this.width = 600;
-	        this.height = 500;
-	        this.context = undefined;
+	    var System = function () {
+
 	    };
 
 	    System.prototype = {
 	        setUp: function () {
-	            if (!this.target) return;
 
-	            var canvas = document.createElement('canvas');
-	            canvas.width = this.width;
-	            canvas.height = this.height;
-
-	            this.context = canvas.getContext('2d');
-
-	            this.target.innerHTML = '';
-	            this.target.appendChild(canvas);
-
-	            return this;
 	        },
 	        getCamera: function(entities) {
 	            var entityWithCamera = _.find(entities, function(entity) {
@@ -1775,10 +1825,10 @@
 
 	            return camera;
 	        },
-	        update: function (entities) {
-	            if (!this.context) return;
+	        update: function (entities, world) {
+	            var renderer = world.renderer;
+	            if (!renderer) return; // TODO
 
-	            this.preprocess(entities);
 	            var camera = this.getCamera(entities);
 
 	            var process = this.process.bind(this);
@@ -1787,50 +1837,45 @@
 	                var location = entity.getComponent('location');
 	                if (!rendered || !location) return;
 
-	                process(entity, {rendered: rendered, location: location}, camera)
+	                process(entity, {rendered: rendered, location: location}, camera, renderer)
 	            })
 	        },
-	        preprocess: function (entities) {
-	            var context = this.context;
-
-	            context.fillStyle = '#000';
-	            context.fillRect(0, 0, this.width, this.height);
-	        },
-	        process: function (entity, components, camera) {
+	        process: function (entity, components, camera, renderer) {
 	            var rendered = components.rendered;
 	            var location = components.location;
 
-	            var context = this.context;
+	            renderer.batch(function(context) {
+	                var foo = entity.getComponent('bot');
+	                if(foo && foo.target) {
+	                    var x = foo.target.x;
+	                    var y = foo.target.y;
 
-	            context.save();
+	                    context.fillStyle = 'red';
+	                    context.fillRect(x, y, 5, 5);
+	                }
 
-	            var foo = entity.getComponent('bot');
-	            if(foo && foo.target) {
-	                var x = foo.target.x;
-	                var y = foo.target.y;
+	                var center = {
+	                    x: location.x + (rendered.width / 2),
+	                    y: location.y + (rendered.height / 2)
+	                };
 
-	                context.fillStyle = 'white'
-	                context.fillRect(x, y, 5, 5);
-	            }
+	                var drawAt = {
+	                    x: -(rendered.width / 2),
+	                    y: -(rendered.height / 2)
+	                };
 
-	            context.fillStyle = rendered.color;
+	                context.translate(center.x, center.y);
 
-	            var center = {
-	                x: location.x + (rendered.width / 2),
-	                y: location.y + (rendered.height / 2)
-	            };
+	                context.rotate(location.rotation);
 
-	            var drawAt = {
-	                x: -(rendered.width / 2),
-	                y: -(rendered.height / 2)
-	            };
+	                if(rendered.color) {
+	                    context.fillStyle = rendered.color;
+	                    context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
+	                } else if(rendered.graphic) {
+	                    context.drawImage(rendered.graphic, drawAt.x, drawAt.y);
+	                }
+	            });
 
-	            context.translate(center.x, center.y);
-
-	            context.rotate(location.rotation);
-	            context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
-
-	            context.restore();
 	        }
 	    };
 
@@ -1840,10 +1885,10 @@
 	module.exports = Render;
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(4);
+	var _ = __webpack_require__(5);
 
 	var Friction = (function() {
 	    var System = function(window) {
@@ -1882,10 +1927,10 @@
 	module.exports = Friction;
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var MathHelpers = __webpack_require__(15);
+	var MathHelpers = __webpack_require__(17);
 
 	var Movement = (function () {
 	    var System = function () {
@@ -1997,7 +2042,36 @@
 	module.exports = Movement;
 
 /***/ },
-/* 10 */
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = (function () {
+	    function Loader() {
+	        this.assets = {};
+	    };
+
+	    Loader.prototype = {
+	        load: function (images, callback) {
+	            var assets = this.assets;
+
+	            var name = 'player';
+	            var src = 'images/player.gif';
+
+	            var image = new Image();
+	            image.onload = function () {
+	                assets[name] = image;
+
+	                callback(assets);
+	            };
+	            image.src = src;
+	        }
+	    };
+
+	    return Loader;
+	})();
+
+/***/ },
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Entity = (function() {
@@ -2029,7 +2103,7 @@
 
 
 /***/ },
-/* 11 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var EntityManager = (function () {
@@ -2053,7 +2127,7 @@
 	module.exports = EntityManager;
 
 /***/ },
-/* 12 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var SequentialIdGenerator = function() {
@@ -2068,10 +2142,10 @@
 	module.exports = SequentialIdGenerator;
 
 /***/ },
-/* 13 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(4);
+	var _ = __webpack_require__(5);
 
 	var Manager = (function() {
 	    var Manager = function(systems) {
@@ -2083,9 +2157,11 @@
 	            systems = _.isArray(systems) ? systems : [systems];
 	            this.systems = this.systems.concat(systems)
 	        },
-	        update: function(entities) {
+	        update: function(world) {
+	            world.renderer.clear();
+
 	            _.each(this.systems, function(system) {
-	                system.update(entities);
+	                system.update(world.entityManager.entities, world);
 	            });
 	        }
 	    };
@@ -2096,10 +2172,10 @@
 	module.exports = Manager;
 
 /***/ },
-/* 14 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(4);
+	var _ = __webpack_require__(5);
 
 	var allComponents = _.object(_.map([
 	    'Rendered',
@@ -2111,13 +2187,13 @@
 	    'Camera',
 	    'Bot'
 	], function(tag) {
-	    return [tag, __webpack_require__(16)("./" + tag.toLowerCase())];
+	    return [tag, __webpack_require__(18)("./" + tag.toLowerCase())];
 	}));
 
 	module.exports = allComponents;
 
 /***/ },
-/* 15 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = {
@@ -2142,28 +2218,28 @@
 	};
 
 /***/ },
-/* 16 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./acceleration": 17,
-		"./acceleration.js": 17,
-		"./bot": 18,
-		"./bot.js": 18,
-		"./camera": 19,
-		"./camera.js": 19,
-		"./friction": 20,
-		"./friction.js": 20,
-		"./index": 14,
-		"./index.js": 14,
-		"./keyboard": 21,
-		"./keyboard.js": 21,
-		"./location": 22,
-		"./location.js": 22,
-		"./rendered": 23,
-		"./rendered.js": 23,
-		"./velocity": 24,
-		"./velocity.js": 24
+		"./acceleration": 19,
+		"./acceleration.js": 19,
+		"./bot": 20,
+		"./bot.js": 20,
+		"./camera": 21,
+		"./camera.js": 21,
+		"./friction": 22,
+		"./friction.js": 22,
+		"./index": 16,
+		"./index.js": 16,
+		"./keyboard": 23,
+		"./keyboard.js": 23,
+		"./location": 24,
+		"./location.js": 24,
+		"./rendered": 25,
+		"./rendered.js": 25,
+		"./velocity": 26,
+		"./velocity.js": 26
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -2176,14 +2252,14 @@
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 16;
+	webpackContext.id = 18;
 
 
 /***/ },
-/* 17 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(25);
+	var Components = __webpack_require__(27);
 
 	module.exports = Components.create('acceleration', {
 	    power: 0.2,
@@ -2192,10 +2268,10 @@
 	});
 
 /***/ },
-/* 18 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(25);
+	var Components = __webpack_require__(27);
 
 	module.exports = Components.create('bot', {
 	    state: 'roam',
@@ -2203,39 +2279,39 @@
 	});
 
 /***/ },
-/* 19 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(25);
+	var Components = __webpack_require__(27);
 
 	module.exports = Components.create('camera', {
 	});
 
 /***/ },
-/* 20 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(25);
+	var Components = __webpack_require__(27);
 
 	module.exports = Components.create('friction', {
 	    resistance: 0.9
 	});
 
 /***/ },
-/* 21 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(25);
+	var Components = __webpack_require__(27);
 
 	module.exports = Components.create('keyboard', {});
 
 /***/ },
-/* 22 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(25);
-	var _ = __webpack_require__(4);
-	var MathHelper = __webpack_require__(15);
+	var Components = __webpack_require__(27);
+	var _ = __webpack_require__(5);
+	var MathHelper = __webpack_require__(17);
 
 	module.exports = (function() {
 	    var Component = function(values) {
@@ -2273,22 +2349,23 @@
 
 
 /***/ },
-/* 23 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(25);
+	var Components = __webpack_require__(27);
 
 	module.exports = Components.create('rendered', {
-	    color: 'red',
 	    width: 100,
-	    height: 100
+	    height: 100,
+	    color: undefined,
+	    graphic: undefined
 	});
 
 /***/ },
-/* 24 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(25);
+	var Components = __webpack_require__(27);
 
 	module.exports = Components.create('velocity', {
 	    x: 0,
@@ -2296,10 +2373,10 @@
 	});
 
 /***/ },
-/* 25 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(4);
+	var _ = __webpack_require__(5);
 
 	var safeAccess = function(hash) {
 	    return function(key, fallback) {

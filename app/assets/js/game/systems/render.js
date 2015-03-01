@@ -1,27 +1,13 @@
 var _ = require('underscore');
 
 var Render = (function () {
-    var System = function (target) {
-        this.target = target;
-        this.width = 600;
-        this.height = 500;
-        this.context = undefined;
+    var System = function () {
+
     };
 
     System.prototype = {
         setUp: function () {
-            if (!this.target) return;
 
-            var canvas = document.createElement('canvas');
-            canvas.width = this.width;
-            canvas.height = this.height;
-
-            this.context = canvas.getContext('2d');
-
-            this.target.innerHTML = '';
-            this.target.appendChild(canvas);
-
-            return this;
         },
         getCamera: function(entities) {
             var entityWithCamera = _.find(entities, function(entity) {
@@ -37,10 +23,10 @@ var Render = (function () {
 
             return camera;
         },
-        update: function (entities) {
-            if (!this.context) return;
+        update: function (entities, world) {
+            var renderer = world.renderer;
+            if (!renderer) return; // TODO
 
-            this.preprocess(entities);
             var camera = this.getCamera(entities);
 
             var process = this.process.bind(this);
@@ -49,50 +35,45 @@ var Render = (function () {
                 var location = entity.getComponent('location');
                 if (!rendered || !location) return;
 
-                process(entity, {rendered: rendered, location: location}, camera)
+                process(entity, {rendered: rendered, location: location}, camera, renderer)
             })
         },
-        preprocess: function (entities) {
-            var context = this.context;
-
-            context.fillStyle = '#000';
-            context.fillRect(0, 0, this.width, this.height);
-        },
-        process: function (entity, components, camera) {
+        process: function (entity, components, camera, renderer) {
             var rendered = components.rendered;
             var location = components.location;
 
-            var context = this.context;
+            renderer.batch(function(context) {
+                var foo = entity.getComponent('bot');
+                if(foo && foo.target) {
+                    var x = foo.target.x;
+                    var y = foo.target.y;
 
-            context.save();
+                    context.fillStyle = 'red';
+                    context.fillRect(x, y, 5, 5);
+                }
 
-            var foo = entity.getComponent('bot');
-            if(foo && foo.target) {
-                var x = foo.target.x;
-                var y = foo.target.y;
+                var center = {
+                    x: location.x + (rendered.width / 2),
+                    y: location.y + (rendered.height / 2)
+                };
 
-                context.fillStyle = 'white'
-                context.fillRect(x, y, 5, 5);
-            }
+                var drawAt = {
+                    x: -(rendered.width / 2),
+                    y: -(rendered.height / 2)
+                };
 
-            context.fillStyle = rendered.color;
+                context.translate(center.x, center.y);
 
-            var center = {
-                x: location.x + (rendered.width / 2),
-                y: location.y + (rendered.height / 2)
-            };
+                context.rotate(location.rotation);
 
-            var drawAt = {
-                x: -(rendered.width / 2),
-                y: -(rendered.height / 2)
-            };
+                if(rendered.color) {
+                    context.fillStyle = rendered.color;
+                    context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
+                } else if(rendered.graphic) {
+                    context.drawImage(rendered.graphic, drawAt.x, drawAt.y);
+                }
+            });
 
-            context.translate(center.x, center.y);
-
-            context.rotate(location.rotation);
-            context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
-
-            context.restore();
         }
     };
 
