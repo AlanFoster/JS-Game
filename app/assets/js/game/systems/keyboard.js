@@ -37,18 +37,18 @@ var Keyboard = (function() {
             var process = this.process.bind(this);
             entities.forEach(function(entity) {
                 var velocity = entity.getComponent('velocity');
-                var location = entity.getComponent('location');
+                var spatial = entity.getComponent('spatial');
                 var keyboard = entity.getComponent('keyboard');
                 var acceleration = entity.getComponent('acceleration');
                 if (!velocity || !keyboard || !acceleration) return;
 
-                process(entity, { velocity: velocity, keyboard: keyboard, location: location, acceleration: acceleration })
+                process(entity, { velocity: velocity, keyboard: keyboard, spatial: spatial, acceleration: acceleration })
             });
 
         },
         process: function(entity, components) {
             var velocity = components.velocity;
-            var location = components.location;
+            var spatial = components.spatial;
             var acceleration = components.acceleration;
 
             var velocityUpdates = [];
@@ -67,7 +67,7 @@ var Keyboard = (function() {
                 velocity.x = clamp(velocity.x + update.x)({ from : -maxSpeed, to: maxSpeed });
                 velocity.y = clamp(velocity.y + update.y)({ from : -maxSpeed, to: maxSpeed });
 
-                location.rotation += update.rotation
+                spatial.rotation += update.rotation
             });
         }
     };

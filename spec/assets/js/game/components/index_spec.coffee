@@ -5,7 +5,7 @@ describe 'Components Index', ->
   expectedEntities = [
     'Rendered',
     'Velocity',
-    'Location',
+    'Spatial',
     'Acceleration',
     'Keyboard',
     'Friction',

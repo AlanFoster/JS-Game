@@ -1,6 +1,6 @@
 subject = require('game/systems/keyboard')
 Entity = require('core/entities/entity')
-Location = require('game/components/location')
+Spatial = require('game/components/spatial')
 Velocity = require('game/components/velocity')
 Rendered = require('game/components/rendered')
 Acceleration = require('game/components/acceleration')
@@ -72,11 +72,15 @@ describe 'Keyboard System', ->
         expect(@instance.keysDown).toEqual(@expected)
 
   describe '#process', ->
+    negative_1_radians = 5.283185307179586
+    negative_26_radians = 5.415926535897931
+    positive_26_radians = 0.8672587712816551
+
     beforeEach ->
       @instance = new subject()
 
     [
-      {key: 'left', x: 0, y: 0, rotation: -1},
+      {key: 'left', x: 0, y: 0, rotation: negative_1_radians},
       {key: 'up', x: 1, y: 1, rotation: 0},
       {key: 'right', x: 0, y: 0, rotation: 1},
       {key: 'down', x: -1, y: -1, rotation: 0}
@@ -87,8 +91,8 @@ describe 'Keyboard System', ->
           @instance.keysDown[key] = true
           @velocity = new Velocity x: 0, y: 0
           @acceleration = new Acceleration power: 1, maxSpeed: 5, turningSpeed: 1
-          @location = new Location x: 0, y: 0, rotation: 0
-          @instance.process({}, {velocity: @velocity, acceleration: @acceleration, location: @location})
+          @spatial = new Spatial x: 0, y: 0, rotation: 0
+          @instance.process({}, {velocity: @velocity, acceleration: @acceleration, spatial: @spatial})
 
         it 'increases X velocity', ->
           expect(@velocity.x).toBe x
@@ -97,12 +101,12 @@ describe 'Keyboard System', ->
           expect(@velocity.y).toBe y
 
         it 'increases Y velocity', ->
-          expect(@location.rotation).toBe rotation
+          expect(@spatial.rotation).toBe rotation
 
     [
-      {key: 'left', x: 0, y: 0, rotation: -26},
+      {key: 'left', x: 0, y: 0, rotation: negative_26_radians},
       {key: 'up', x: 5, y: 5, rotation: 0},
-      {key: 'right', x: 0, y: 0, rotation: +26},
+      {key: 'right', x: 0, y: 0, rotation: positive_26_radians},
       {key: 'down', x: -5, y: -5, rotation: 0}
     ].forEach ({key, x, y, rotation}) ->
       describe "#{key} is down multiple times", ->
@@ -111,10 +115,10 @@ describe 'Keyboard System', ->
           @instance.keysDown[key] = true
           @velocity = new Velocity x: 0, y: 0
           @acceleration = new Acceleration power: 1, maxSpeed: 5, turningSpeed: 1
-          @location = new Location x: 0, y: 0, rotation: 0
+          @spatial = new Spatial x: 0, y: 0, rotation: 0
 
           [0..25].forEach () =>
-            @instance.process({}, {velocity: @velocity, acceleration: @acceleration, location: @location})
+            @instance.process({}, {velocity: @velocity, acceleration: @acceleration, spatial: @spatial})
 
         it 'increases X velocity', ->
           expect(@velocity.x).toBe x
@@ -122,5 +126,5 @@ describe 'Keyboard System', ->
         it 'increases Y velocity', ->
           expect(@velocity.y).toBe y
 
-        it 'increases Y velocity', ->
-          expect(@location.rotation).toBe rotation
+        it 'increases rotation', ->
+          expect(@spatial.rotation).toBe rotation

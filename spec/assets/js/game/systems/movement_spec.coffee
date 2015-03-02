@@ -1,6 +1,6 @@
 subject = require('game/systems/movement')
 Entity = require('core/entities/entity')
-Location = require('game/components/location')
+Spatial = require('game/components/spatial')
 Velocity = require('game/components/velocity')
 Rendered = require('game/components/rendered')
 
@@ -23,11 +23,11 @@ describe 'Movement System', ->
 
       beforeEach ->
         @instance = new subject()
-        @location = new Location()
+        @spatial = new Spatial()
         @velocity = new Velocity()
-        @validEntity = new Entity('valid').addComponent(@location).addComponent(@velocity).addComponent(new Rendered())
+        @validEntity = new Entity('valid').addComponent(@spatial).addComponent(@velocity).addComponent(new Rendered())
         @invalidEntity1 = new Entity('invalid1').addComponent(new Velocity())
-        @invalidEntity2 = new Entity('invalid2').addComponent(new Location())
+        @invalidEntity2 = new Entity('invalid2').addComponent(new Spatial())
 
         spyOn @instance, 'process'
         entities = [
@@ -37,9 +37,9 @@ describe 'Movement System', ->
         ]
         @instance.update entities
 
-      it 'called processed the required entities', ->
+      it 'processed the required entities', ->
         expectedComponents =
-          location: @location
+          spatial: @spatial
           velocity: @velocity
 
         expect(@instance.process).toHaveBeenCalledWith @validEntity, expectedComponents
@@ -54,15 +54,15 @@ describe 'Movement System', ->
     beforeEach ->
       @instance = new subject()
       @velocity = new Velocity x: 2, y: 3
-      @location = new Location x: 0, y: 0
+      @spatial = new Spatial x: 0, y: 0
 
-      @entity = new Entity('id').addComponent(@location).addComponent(@velocity)
+      @entity = new Entity('id').addComponent(@spatial).addComponent(@velocity)
       @instance.process @entity,
                         velocity: @velocity
-                        location: @location
+                        spatial: @spatial
 
     it 'increases the x position by the y velocity', ->
-      expect(@entity.getComponent('location').x).toEqual 2
+      expect(@entity.getComponent('spatial').x).toEqual 2
 
     it 'increases the y position by the y velocity', ->
-      expect(@entity.getComponent('location').y).toEqual 0
+      expect(@entity.getComponent('spatial').y).toEqual 0

@@ -30,25 +30,6 @@ var RandomEntityCreatorSystem = (function() {
 
             var assetManager = world.assetManager;
 
-            //this.entityManager.createEntity()
-            //    .addComponent(new Components.Rendered({
-            //        width: 30,
-            //        height: 30,
-            //        color: colors[random(0, colors.length)]
-            //    }))
-            //    .addComponent(new Components.Velocity({
-            //        x: 0,
-            //        y: 0
-            //    }))
-            //    .addComponent(new Components.Location({
-            //        x: 100,
-            //        y: 120
-            //    }))
-            //    .addComponent(new Components.Bot({
-            //
-            //    }));
-
-
             var entity = this.entityManager.createEntity()
                                             .addComponent(new Components.Rendered({
                                                 width: 66,
@@ -60,13 +41,14 @@ var RandomEntityCreatorSystem = (function() {
                                                 x: 0,
                                                 y: 0
                                             }))
-                                            .addComponent(new Components.Location({
+                                            .addComponent(new Components.Spatial({
                                                 x: 0,
-                                                y: 0
+                                                y: 0,
+                                                width: 66,
+                                                height: 66
                                             }));
 
-            entity.addComponent(new Components.Keyboard({}))
-            entity.addComponent(new Components.Acceleration({}))
+            entity.addComponent(new Components.Acceleration({ power: 2, maxSpeed: 15 }))
                   .addComponent(new Components.Friction({}))
                   .addComponent(new Components.Camera({}))
                   .addComponent(new Components.Bot({

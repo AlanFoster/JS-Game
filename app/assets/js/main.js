@@ -10,8 +10,8 @@ window.onload = function () {
         assetManager: assetManager,
 
         size: {
-            height: 600,
-            width: 500
+            width: window.innerWidth,
+            height: window.innerHeight
         }
     };
 

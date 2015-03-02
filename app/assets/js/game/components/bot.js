@@ -2,5 +2,6 @@ var Components = require('core/components/index');
 
 module.exports = Components.create('bot', {
     state: 'roam',
-    counter: 0
+    counter: 0,
+    roamCount: 0
 });

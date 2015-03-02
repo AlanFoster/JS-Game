@@ -14,11 +14,11 @@ var Render = (function () {
                 return entity.getComponent('camera')
             });
 
-            var location = entityWithCamera.getComponent('location');
+            var spatial = entityWithCamera.getComponent('spatial');
             var rendered = entityWithCamera.getComponent('rendered');
             var camera = {
-                x: location.x + (rendered.width / 2),
-                y: location.y + (rendered.height / 2)
+                x: spatial.x + (rendered.width / 2),
+                y: spatial.y + (rendered.height / 2)
             };
 
             return camera;
@@ -32,15 +32,15 @@ var Render = (function () {
             var process = this.process.bind(this);
             entities.forEach(function (entity) {
                 var rendered = entity.getComponent('rendered');
-                var location = entity.getComponent('location');
-                if (!rendered || !location) return;
+                var spatial = entity.getComponent('spatial');
+                if (!rendered || !spatial) return;
 
-                process(entity, {rendered: rendered, location: location}, camera, renderer)
+                process(entity, {rendered: rendered, spatial: spatial}, camera, renderer)
             })
         },
         process: function (entity, components, camera, renderer) {
             var rendered = components.rendered;
-            var location = components.location;
+            var spatial = components.spatial;
 
             renderer.batch(function(context) {
                 var foo = entity.getComponent('bot');
@@ -48,23 +48,20 @@ var Render = (function () {
                     var x = foo.target.x;
                     var y = foo.target.y;
 
-                    context.fillStyle = 'red';
+                    context.fillStyle = 'blue';
                     context.fillRect(x, y, 5, 5);
-                }
-
-                var center = {
-                    x: location.x + (rendered.width / 2),
-                    y: location.y + (rendered.height / 2)
                 };
 
+                var center = spatial.center;
+
                 var drawAt = {
-                    x: -(rendered.width / 2),
-                    y: -(rendered.height / 2)
+                    x: -(spatial.width / 2),
+                    y: -(spatial.height / 2)
                 };
 
                 context.translate(center.x, center.y);
 
-                context.rotate(location.rotation);
+                context.rotate(spatial.rotation);
 
                 if(rendered.color) {
                     context.fillStyle = rendered.color;

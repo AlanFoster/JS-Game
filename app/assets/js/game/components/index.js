@@ -3,7 +3,7 @@ var _ = require('underscore');
 var allComponents = _.object(_.map([
     'Rendered',
     'Velocity',
-    'Location',
+    'Spatial',
     'Acceleration',
     'Keyboard',
     'Friction',

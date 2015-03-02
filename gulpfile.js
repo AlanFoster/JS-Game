@@ -13,7 +13,7 @@ var handleError = function(error) {
                             .replace(/'|"/g, "\\\'")
                             .replace(/\n|\r/g, "<br />");
 
-    return gulp.src('app/assets/js/error.js')
+     gulp.src('app/assets/js/error.js')
                 .pipe(replace("#{ERROR}", errorContent))
                 .pipe(rename('main.js'))
                 .pipe(gulp.dest('dist/js'));

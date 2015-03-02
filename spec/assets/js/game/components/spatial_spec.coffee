@@ -1,6 +1,6 @@
-subject = require('game/components/location')
+subject = require('game/components/spatial')
 
-describe 'location component', ->
+describe 'spatial component', ->
   it 'exists', ->
     expect(subject).toBeTruthy()
 

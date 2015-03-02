@@ -7,19 +7,19 @@ var Movement = (function() {
         update: function(entities) {
             var process = this.process;
             entities.forEach(function(entity) {
-                var location = entity.getComponent('location');
+                var spatial = entity.getComponent('spatial');
                 var velocity = entity.getComponent('velocity');
-                if (!location || !velocity) return;
+                if (!spatial || !velocity) return;
 
-                process(entity, { location: location, velocity: velocity })
+                process(entity, { spatial: spatial, velocity: velocity })
             })
         },
         process: function(entity, components) {
-            var location = components.location;
+            var spatial = components.spatial;
             var velocity = components.velocity;
 
-            location.x += velocity.x * Math.cos(location.rotation);
-            location.y += velocity.y * Math.sin(location.rotation);
+            spatial.x += velocity.x * Math.cos(spatial.rotation);
+            spatial.y += velocity.y * Math.sin(spatial.rotation);
         }
     };
 

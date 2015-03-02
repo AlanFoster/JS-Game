@@ -1,6 +1,6 @@
 subject = require('game/systems/render')
 Entity = require('core/entities/entity')
-Location = require('game/components/location')
+Spatial = require('game/components/spatial')
 Rendered = require('game/components/rendered')
 
 describe 'Movement System', ->
@@ -18,8 +18,8 @@ describe 'Movement System', ->
 
     context 'entities with components supplied', ->
       rendered = new Rendered()
-      location = new Location()
-      validEntity = new Entity('valid').addComponent(rendered).addComponent(location)
+      spatial = new Spatial()
+      validEntity = new Entity('valid').addComponent(rendered).addComponent(spatial)
       invalidEntity1 = new Entity('invalid1')
       beforeEach ->
         spyOn(instance, 'process').and.returnValue()
@@ -37,7 +37,7 @@ describe 'Movement System', ->
       it 'called processed the required entities', ->
         expectedComponents =
           rendered: rendered
-          location: location
+          spatial: spatial
 
         expect(instance.process).toHaveBeenCalledWith validEntity, expectedComponents
 

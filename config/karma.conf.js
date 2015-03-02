@@ -4,6 +4,8 @@ var _ = require('underscore');
 var configuration = require('./index');
 
 module.exports = function(config) {
+    var PORT = 9000;
+
     config.set({
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -16,8 +18,13 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
         'spec/spec_helper.coffee',
-        'spec/**/*.coffee'
+        'spec/**/*.coffee',
+        { pattern: 'app/assets/images/**/*', watched: false, included: false, served: true }
     ],
+
+    proxies: {
+        '/images/': 'http://localhost:' + PORT + '/base/app/assets/images/'
+    },
 
     // list of files to exclude
     exclude: [
@@ -35,7 +42,7 @@ module.exports = function(config) {
     reporters: ['progress'],
 
     // web server port
-    port: 9000,
+    port: PORT,
 
     // enable / disable colors in the output (reporters and logs)
     colors: true,

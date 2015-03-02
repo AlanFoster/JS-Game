@@ -28,3 +28,10 @@ Testing
 npm install -g karma
 gulp test
 ```
+
+Running one test in isolation
+
+``coffeescript
+fdescribe '...', ->
+    ffit '...', ->
+```

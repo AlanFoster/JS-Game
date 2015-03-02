@@ -19,12 +19,12 @@ var Movement = (function () {
     };
 
     var rotateTowards = function (from, to) {
-        var angle = MathHelpers.angleBetween(to, from);
+        var angle = MathHelpers.normalizeRadians(MathHelpers.angleBetween(to, from.center));
         var angleDifference = angle - from.rotation;
 
         var sensitivity = Math.PI / 120;
 
-        var newRotation = Math.abs(angleDifference) >= sensitivity ? angleDifference : from.rotation;
+        var newRotation = Math.abs(angleDifference) >= sensitivity ? angle : from.rotation;
 
         return newRotation;
     };
@@ -33,28 +33,28 @@ var Movement = (function () {
         var newRotation = rotateTowards(from, to);
         var oldRotation = from.rotation;
 
-        var maximumTurningDistance = Math.PI / 180;
-        var turnLeft = oldRotation > newRotation + Math.PI || oldRotation < newRotation
+        var maximumTurningDistance = Math.PI / 120;
+        var turnLeft = oldRotation > newRotation + Math.PI || oldRotation < newRotation;
         var smoothRotation = turnLeft ? maximumTurningDistance : -maximumTurningDistance;
 
         return oldRotation + smoothRotation;
     };
 
     System.prototype = {
-        update: function (entities) {
+        update: function (entities, world) {
             var process = this.process;
             entities.forEach(function (entity) {
-                var location = entity.getComponent('location');
+                var spatial = entity.getComponent('spatial');
                 var velocity = entity.getComponent('velocity');
                 var bot = entity.getComponent('bot');
 
-                if (!location || !velocity || !bot) return;
+                if (!spatial || !velocity || !bot) return;
 
-                process(entity, {location: location, velocity: velocity, bot: bot})
+                process(entity, {spatial: spatial, velocity: velocity, bot: bot}, world)
             })
         },
-        process: function (entity, components) {
-            var location = components.location;
+        process: function (entity, components, world) {
+            var spatial = components.spatial;
             var velocity = components.velocity;
             var bot = components.bot;
 
@@ -68,35 +68,32 @@ var Movement = (function () {
 
                 case 'roam':
                     bot.target = {
-                        //x: ~~(Math.random() * 400),
-                        //y: ~~(Math.random() * 400)
-                        x: 200,
-                        y: 200
+                        x: ~~(Math.random() * world.size.width),
+                        y: ~~(Math.random() * world.size.height)
                     };
-
-                    //velocity.x = 2;
-                    //velocity.y = 2;
 
                     bot.state = 'roaming';
                     break;
 
                 case 'roaming':
-                    location.rotation = rotateTowardsSmoothly(location, bot.target);
+                    spatial.rotation = rotateTowardsSmoothly(spatial, bot.target);
 
-                    //bot.target.x = 100 + ((bot.target.x + 1) % 200);
+                    velocity.x = 2;
+                    velocity.y = 2;
 
-                    //location.x += velocity.x * Math.cos(location.rotation);
-                    //location.y += velocity.y * Math.sin(location.rotation);
+                    spatial.x += velocity.x * Math.cos(spatial.rotation);
+                    spatial.y += velocity.y * Math.sin(spatial.rotation);
 
-                    var distanceFromTarget = MathHelpers.distanceBetween(location, bot.target);
-                    if(distanceFromTarget < 20) {
+                    var distanceFromTarget = MathHelpers.distanceBetween(spatial.center, bot.target);
+                    if(distanceFromTarget < ((spatial.height + spatial.width) / 2)) {
                         changeState(bot);
                     }
 
-                    //bot.roamCount = (bot.roamCount + 1) % 200;
-                    //if (bot.roamCount == 0) {
-                    //    changeState(bot);
-                    //}
+                    bot.roamCount = (bot.roamCount + 1) % 2000;
+                    console.log(bot.roamCount);
+                    if (bot.roamCount == 0) {
+                        changeState(bot);
+                    }
 
                     break;
             }

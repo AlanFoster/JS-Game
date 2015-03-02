@@ -56,8 +56,8 @@
 	        assetManager: assetManager,
 
 	        size: {
-	            height: 600,
-	            width: 500
+	            width: window.innerWidth,
+	            height: window.innerHeight
 	        }
 	    };
 
@@ -161,25 +161,6 @@
 
 	            var assetManager = world.assetManager;
 
-	            //this.entityManager.createEntity()
-	            //    .addComponent(new Components.Rendered({
-	            //        width: 30,
-	            //        height: 30,
-	            //        color: colors[random(0, colors.length)]
-	            //    }))
-	            //    .addComponent(new Components.Velocity({
-	            //        x: 0,
-	            //        y: 0
-	            //    }))
-	            //    .addComponent(new Components.Location({
-	            //        x: 100,
-	            //        y: 120
-	            //    }))
-	            //    .addComponent(new Components.Bot({
-	            //
-	            //    }));
-
-
 	            var entity = this.entityManager.createEntity()
 	                                            .addComponent(new Components.Rendered({
 	                                                width: 66,
@@ -191,13 +172,14 @@
 	                                                x: 0,
 	                                                y: 0
 	                                            }))
-	                                            .addComponent(new Components.Location({
+	                                            .addComponent(new Components.Spatial({
 	                                                x: 0,
-	                                                y: 0
+	                                                y: 0,
+	                                                width: 66,
+	                                                height: 66
 	                                            }));
 
-	            entity.addComponent(new Components.Keyboard({}))
-	            entity.addComponent(new Components.Acceleration({}))
+	            entity.addComponent(new Components.Acceleration({ power: 2, maxSpeed: 15 }))
 	                  .addComponent(new Components.Friction({}))
 	                  .addComponent(new Components.Camera({}))
 	                  .addComponent(new Components.Bot({
@@ -1722,18 +1704,18 @@
 	            var process = this.process.bind(this);
 	            entities.forEach(function(entity) {
 	                var velocity = entity.getComponent('velocity');
-	                var location = entity.getComponent('location');
+	                var spatial = entity.getComponent('spatial');
 	                var keyboard = entity.getComponent('keyboard');
 	                var acceleration = entity.getComponent('acceleration');
 	                if (!velocity || !keyboard || !acceleration) return;
 
-	                process(entity, { velocity: velocity, keyboard: keyboard, location: location, acceleration: acceleration })
+	                process(entity, { velocity: velocity, keyboard: keyboard, spatial: spatial, acceleration: acceleration })
 	            });
 
 	        },
 	        process: function(entity, components) {
 	            var velocity = components.velocity;
-	            var location = components.location;
+	            var spatial = components.spatial;
 	            var acceleration = components.acceleration;
 
 	            var velocityUpdates = [];
@@ -1752,7 +1734,7 @@
 	                velocity.x = clamp(velocity.x + update.x)({ from : -maxSpeed, to: maxSpeed });
 	                velocity.y = clamp(velocity.y + update.y)({ from : -maxSpeed, to: maxSpeed });
 
-	                location.rotation += update.rotation
+	                spatial.rotation += update.rotation
 	            });
 	        }
 	    };
@@ -1775,19 +1757,19 @@
 	        update: function(entities) {
 	            var process = this.process;
 	            entities.forEach(function(entity) {
-	                var location = entity.getComponent('location');
+	                var spatial = entity.getComponent('spatial');
 	                var velocity = entity.getComponent('velocity');
-	                if (!location || !velocity) return;
+	                if (!spatial || !velocity) return;
 
-	                process(entity, { location: location, velocity: velocity })
+	                process(entity, { spatial: spatial, velocity: velocity })
 	            })
 	        },
 	        process: function(entity, components) {
-	            var location = components.location;
+	            var spatial = components.spatial;
 	            var velocity = components.velocity;
 
-	            location.x += velocity.x * Math.cos(location.rotation);
-	            location.y += velocity.y * Math.sin(location.rotation);
+	            spatial.x += velocity.x * Math.cos(spatial.rotation);
+	            spatial.y += velocity.y * Math.sin(spatial.rotation);
 	        }
 	    };
 
@@ -1816,11 +1798,11 @@
 	                return entity.getComponent('camera')
 	            });
 
-	            var location = entityWithCamera.getComponent('location');
+	            var spatial = entityWithCamera.getComponent('spatial');
 	            var rendered = entityWithCamera.getComponent('rendered');
 	            var camera = {
-	                x: location.x + (rendered.width / 2),
-	                y: location.y + (rendered.height / 2)
+	                x: spatial.x + (rendered.width / 2),
+	                y: spatial.y + (rendered.height / 2)
 	            };
 
 	            return camera;
@@ -1834,15 +1816,15 @@
 	            var process = this.process.bind(this);
 	            entities.forEach(function (entity) {
 	                var rendered = entity.getComponent('rendered');
-	                var location = entity.getComponent('location');
-	                if (!rendered || !location) return;
+	                var spatial = entity.getComponent('spatial');
+	                if (!rendered || !spatial) return;
 
-	                process(entity, {rendered: rendered, location: location}, camera, renderer)
+	                process(entity, {rendered: rendered, spatial: spatial}, camera, renderer)
 	            })
 	        },
 	        process: function (entity, components, camera, renderer) {
 	            var rendered = components.rendered;
-	            var location = components.location;
+	            var spatial = components.spatial;
 
 	            renderer.batch(function(context) {
 	                var foo = entity.getComponent('bot');
@@ -1850,23 +1832,20 @@
 	                    var x = foo.target.x;
 	                    var y = foo.target.y;
 
-	                    context.fillStyle = 'red';
+	                    context.fillStyle = 'blue';
 	                    context.fillRect(x, y, 5, 5);
-	                }
-
-	                var center = {
-	                    x: location.x + (rendered.width / 2),
-	                    y: location.y + (rendered.height / 2)
 	                };
 
+	                var center = spatial.center;
+
 	                var drawAt = {
-	                    x: -(rendered.width / 2),
-	                    y: -(rendered.height / 2)
+	                    x: -(spatial.width / 2),
+	                    y: -(spatial.height / 2)
 	                };
 
 	                context.translate(center.x, center.y);
 
-	                context.rotate(location.rotation);
+	                context.rotate(spatial.rotation);
 
 	                if(rendered.color) {
 	                    context.fillStyle = rendered.color;
@@ -1951,12 +1930,12 @@
 	    };
 
 	    var rotateTowards = function (from, to) {
-	        var angle = MathHelpers.angleBetween(to, from);
+	        var angle = MathHelpers.normalizeRadians(MathHelpers.angleBetween(to, from.center));
 	        var angleDifference = angle - from.rotation;
 
 	        var sensitivity = Math.PI / 120;
 
-	        var newRotation = Math.abs(angleDifference) >= sensitivity ? angleDifference : from.rotation;
+	        var newRotation = Math.abs(angleDifference) >= sensitivity ? angle : from.rotation;
 
 	        return newRotation;
 	    };
@@ -1965,28 +1944,28 @@
 	        var newRotation = rotateTowards(from, to);
 	        var oldRotation = from.rotation;
 
-	        var maximumTurningDistance = Math.PI / 180;
-	        var turnLeft = oldRotation > newRotation + Math.PI || oldRotation < newRotation
+	        var maximumTurningDistance = Math.PI / 120;
+	        var turnLeft = oldRotation > newRotation + Math.PI || oldRotation < newRotation;
 	        var smoothRotation = turnLeft ? maximumTurningDistance : -maximumTurningDistance;
 
 	        return oldRotation + smoothRotation;
 	    };
 
 	    System.prototype = {
-	        update: function (entities) {
+	        update: function (entities, world) {
 	            var process = this.process;
 	            entities.forEach(function (entity) {
-	                var location = entity.getComponent('location');
+	                var spatial = entity.getComponent('spatial');
 	                var velocity = entity.getComponent('velocity');
 	                var bot = entity.getComponent('bot');
 
-	                if (!location || !velocity || !bot) return;
+	                if (!spatial || !velocity || !bot) return;
 
-	                process(entity, {location: location, velocity: velocity, bot: bot})
+	                process(entity, {spatial: spatial, velocity: velocity, bot: bot}, world)
 	            })
 	        },
-	        process: function (entity, components) {
-	            var location = components.location;
+	        process: function (entity, components, world) {
+	            var spatial = components.spatial;
 	            var velocity = components.velocity;
 	            var bot = components.bot;
 
@@ -2000,35 +1979,32 @@
 
 	                case 'roam':
 	                    bot.target = {
-	                        //x: ~~(Math.random() * 400),
-	                        //y: ~~(Math.random() * 400)
-	                        x: 200,
-	                        y: 200
+	                        x: ~~(Math.random() * world.size.width),
+	                        y: ~~(Math.random() * world.size.height)
 	                    };
-
-	                    //velocity.x = 2;
-	                    //velocity.y = 2;
 
 	                    bot.state = 'roaming';
 	                    break;
 
 	                case 'roaming':
-	                    location.rotation = rotateTowardsSmoothly(location, bot.target);
+	                    spatial.rotation = rotateTowardsSmoothly(spatial, bot.target);
 
-	                    //bot.target.x = 100 + ((bot.target.x + 1) % 200);
+	                    velocity.x = 2;
+	                    velocity.y = 2;
 
-	                    //location.x += velocity.x * Math.cos(location.rotation);
-	                    //location.y += velocity.y * Math.sin(location.rotation);
+	                    spatial.x += velocity.x * Math.cos(spatial.rotation);
+	                    spatial.y += velocity.y * Math.sin(spatial.rotation);
 
-	                    var distanceFromTarget = MathHelpers.distanceBetween(location, bot.target);
-	                    if(distanceFromTarget < 20) {
+	                    var distanceFromTarget = MathHelpers.distanceBetween(spatial.center, bot.target);
+	                    if(distanceFromTarget < ((spatial.height + spatial.width) / 2)) {
 	                        changeState(bot);
 	                    }
 
-	                    //bot.roamCount = (bot.roamCount + 1) % 200;
-	                    //if (bot.roamCount == 0) {
-	                    //    changeState(bot);
-	                    //}
+	                    bot.roamCount = (bot.roamCount + 1) % 2000;
+	                    console.log(bot.roamCount);
+	                    if (bot.roamCount == 0) {
+	                        changeState(bot);
+	                    }
 
 	                    break;
 	            }
@@ -2180,7 +2156,7 @@
 	var allComponents = _.object(_.map([
 	    'Rendered',
 	    'Velocity',
-	    'Location',
+	    'Spatial',
 	    'Acceleration',
 	    'Keyboard',
 	    'Friction',
@@ -2234,10 +2210,10 @@
 		"./index.js": 16,
 		"./keyboard": 23,
 		"./keyboard.js": 23,
-		"./location": 24,
-		"./location.js": 24,
-		"./rendered": 25,
-		"./rendered.js": 25,
+		"./rendered": 24,
+		"./rendered.js": 24,
+		"./spatial": 25,
+		"./spatial.js": 25,
 		"./velocity": 26,
 		"./velocity.js": 26
 	};
@@ -2275,7 +2251,8 @@
 
 	module.exports = Components.create('bot', {
 	    state: 'roam',
-	    counter: 0
+	    counter: 0,
+	    roamCount: 0
 	});
 
 /***/ },
@@ -2310,14 +2287,25 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Components = __webpack_require__(27);
+
+	module.exports = Components.create('rendered', {
+	    width: 100,
+	    height: 100,
+	    color: undefined,
+	    graphic: undefined
+	});
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(27);
 	var _ = __webpack_require__(5);
 	var MathHelper = __webpack_require__(17);
 
 	module.exports = (function() {
 	    var Component = function(values) {
-	        this.x = _.isUndefined(values.x) ? 0 : values.x;
-	        this.y = _.isUndefined(values.y) ? 0 : values.y;
-	        this._rotation = _.isUndefined(values.rotation) ?  0 : values._rotation;
+	        values = values || {};
 
 	        Object.defineProperty(this, 'rotation', {
 	            set: function(value) {
@@ -2327,10 +2315,27 @@
 	                return this._rotation;
 	            }
 	        });
+
+	        Object.defineProperty(this, 'center', {
+	            get: function() {
+	                var x = this.x + (this.width / 2);
+	                var y = this.y + (this.height / 2);
+
+	                return { x: x, y: y }
+	            }
+	        });
+
+	        this.x = _.isUndefined(values.x) ? 0 : values.x;
+	        this.y = _.isUndefined(values.y) ? 0 : values.y;
+
+	        this.width = _.isUndefined(values.width) ? 0 : values.width;
+	        this.height = _.isUndefined(values.height) ? 0 : values.height;
+
+	        this.rotation = _.isUndefined(values.rotation) ?  0 : values.rotation;
 	    };
 
 	    Component.prototype = {
-	        tag: 'location',
+	        tag: 'spatial',
 	        toString: function() {
 	            return JSON.stringify(this, null, 4)
 	        }
@@ -2338,28 +2343,6 @@
 
 	    return Component;
 	})();
-
-
-	//
-	//module.exports = Components.create('location', {
-	//    x: 0,
-	//    y: 0,
-	//    rotation: 0
-	//});
-
-
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(27);
-
-	module.exports = Components.create('rendered', {
-	    width: 100,
-	    height: 100,
-	    color: undefined,
-	    graphic: undefined
-	});
 
 /***/ },
 /* 26 */
