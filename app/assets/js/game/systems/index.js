@@ -59,7 +59,7 @@ var RandomEntityCreatorSystem = (function() {
                                              .addComponent(new Components.Keyboard({}))
 
 
-            for(var i = 0; i < 4; i++ ) {
+            for(var i = 0; i < 1; i++ ) {
                 createTank('enemy').addComponent(new Components.Bot());
             }
 

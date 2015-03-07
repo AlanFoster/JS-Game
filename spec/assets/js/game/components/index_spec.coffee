@@ -11,7 +11,8 @@ describe 'Components Index', ->
     'Friction',
     'Health',
     'Camera',
-    'Bot'
+    'Bot',
+    'Shootable'
   ]
 
   it 'exposes components', ->

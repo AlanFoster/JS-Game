@@ -194,7 +194,7 @@
 	                                             .addComponent(new Components.Keyboard({}))
 
 
-	            for(var i = 0; i < 4; i++ ) {
+	            for(var i = 0; i < 1; i++ ) {
 	                createTank('enemy').addComponent(new Components.Bot());
 	            }
 
@@ -2267,7 +2267,8 @@
 	    'Friction',
 	    'Health',
 	    'Camera',
-	    'Bot'
+	    'Bot',
+	    'Shootable'
 	], function(tag) {
 	    return [tag, __webpack_require__(18)("./" + tag.toLowerCase())];
 	}));
@@ -2320,10 +2321,12 @@
 		"./keyboard.js": 24,
 		"./rendered": 25,
 		"./rendered.js": 25,
-		"./spatial": 26,
-		"./spatial.js": 26,
-		"./velocity": 27,
-		"./velocity.js": 27
+		"./shootable": 26,
+		"./shootable.js": 26,
+		"./spatial": 27,
+		"./spatial.js": 27,
+		"./velocity": 28,
+		"./velocity.js": 28
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -2343,7 +2346,7 @@
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(28);
+	var Components = __webpack_require__(29);
 
 	module.exports = Components.create('acceleration', {
 	    power: 0.2,
@@ -2355,7 +2358,7 @@
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(28);
+	var Components = __webpack_require__(29);
 
 	module.exports = Components.create('bot', {
 	    state: 'roam',
@@ -2367,7 +2370,7 @@
 /* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(28);
+	var Components = __webpack_require__(29);
 
 	module.exports = Components.create('camera', {
 	});
@@ -2376,7 +2379,7 @@
 /* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(28);
+	var Components = __webpack_require__(29);
 
 	module.exports = Components.create('friction', {
 	    resistance: 0.9
@@ -2386,7 +2389,7 @@
 /* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(28);
+	var Components = __webpack_require__(29);
 
 	module.exports = Components.create('health', {
 	    current: 50,
@@ -2401,7 +2404,7 @@
 /* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(28);
+	var Components = __webpack_require__(29);
 
 	module.exports = Components.create('keyboard', {});
 
@@ -2409,7 +2412,7 @@
 /* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(28);
+	var Components = __webpack_require__(29);
 
 	module.exports = Components.create('rendered', {
 	    width: 100,
@@ -2426,7 +2429,23 @@
 /* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(28);
+	var Components = __webpack_require__(29);
+
+	module.exports = Components.create('shootable', {
+	    speed: 0.5,
+	    // In milliseconds
+	    life: 5000,
+	    damage: 0,
+	    // Flag to denote whether we wish to fire a bullet in
+	    // the next logical update
+	    firing: false
+	});
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(29);
 	var _ = __webpack_require__(5);
 	var MathHelper = __webpack_require__(17);
 
@@ -2456,10 +2475,10 @@
 	});
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(28);
+	var Components = __webpack_require__(29);
 
 	module.exports = Components.create('velocity', {
 	    x: 0,
@@ -2467,7 +2486,7 @@
 	});
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(5);

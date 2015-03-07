@@ -9,7 +9,8 @@ var allComponents = _.object(_.map([
     'Friction',
     'Health',
     'Camera',
-    'Bot'
+    'Bot',
+    'Shootable'
 ], function(tag) {
     return [tag, require('game/components/' + tag.toLowerCase())];
 }));
