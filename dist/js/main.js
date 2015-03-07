@@ -63,7 +63,10 @@
 
 	    world.renderer = new Renderer(document.body).setUp(world);
 
-	    assetManager.load([], function () {
+	    assetManager.load([
+	        { src: 'images/player.gif', name: 'player' },
+	        { src: 'images/enemy.gif', name: 'enemy' }
+	    ], function () {
 	        runner.queue(function () {
 	            systemManager.update(world);
 	        })
@@ -162,31 +165,39 @@
 
 	            var assetManager = world.assetManager;
 
-	            var entity = this.entityManager.createEntity()
-	                                            .addComponent(new Components.Rendered({
-	                                                width: 66,
-	                                                height: 66,
-	                                                //color: colors[random(0, colors.length)]
-	                                                graphic: assetManager.assets.player
-	                                            }))
-	                                            .addComponent(new Components.Velocity({
-	                                                x: 0,
-	                                                y: 0
-	                                            }))
-	                                            .addComponent(new Components.Spatial({
-	                                                x: 300,
-	                                                y: 300,
-	                                                width: 66,
-	                                                height: 66
-	                                            }));
+	            var createTank = function(graphic) {
+	                var entity = this.entityManager
+	                                 .createEntity()
+	                                 .addComponent(new Components.Rendered({
+	                                     width: 66,
+	                                     height: 66,
+	                                     graphic: assetManager.assets[graphic]
+	                                 }))
+	                                 .addComponent(new Components.Velocity({
+	                                     x: 0,
+	                                     y: 0
+	                                 }))
+	                                 .addComponent(new Components.Spatial({
+	                                     x: random(150, 300),
+	                                     y: random(150, 300),
+	                                     width: 66,
+	                                     height: 66
+	                                 }))
+	                                 .addComponent(new Components.Acceleration({ power: 0.3, maxSpeed: 5 }))
+	                                 .addComponent(new Components.Friction({}))
+	                                 .addComponent(new Components.Health({ current: random(0, 20), maximum: 20 }))
 
-	            entity.addComponent(new Components.Acceleration({ power: 2, maxSpeed: 15 }))
-	                  .addComponent(new Components.Friction({}))
-	                  .addComponent(new Components.Camera({}))
-	                  .addComponent(new Components.Health({ current: random(0, 20), maximum: 20 }))
-	                  .addComponent(new Components.Bot({
+	                return entity;
+	            }.bind(this);
 
-	                  }));
+	            var player = createTank('player').addComponent(new Components.Camera({}))
+	                                             .addComponent(new Components.Keyboard({}))
+
+
+	            for(var i = 0; i < 4; i++ ) {
+	                createTank('enemy').addComponent(new Components.Bot());
+	            }
+
 	        }
 	    };
 
@@ -1805,6 +1816,32 @@
 	        };
 	    })();
 
+	    var componentDebugRenderer = (function() {
+	        return {
+	            draw: function(entity, context, size) {
+	                if (!entity.getComponent('camera')) return;
+
+	                var capitalizeFirst = function(string) { return string[0].toUpperCase() + string.substr(1) }
+	                var componentDebug = _.flatten(_.map(entity.components, function(component) {
+	                    var debugged = _.drop(component.toString().split('\n'));
+
+	                    var tag = capitalizeFirst(component.tag);
+	                    var splitter = debugged.length === 0 ? '{ }' : '{';
+	                    return [tag + ': ' + splitter].concat(debugged);
+	                }));
+
+	                var lines = ['Components for entity #' + entity.id + ' - '].concat(componentDebug);
+
+	                context.fillStyle = 'black';
+	                context.font = '15px serif';
+
+	                _.each(lines, function(line, index) {
+	                    context.fillText(line, 15, 15 * (index + 1));
+	                });
+	            }
+	        }
+	    })();
+
 	    var healthBarRenderer = (function() {
 	        var calculateHealthBar = function(health, spatial) {
 	            var healthBarTotalWidth = 180;
@@ -1890,6 +1927,7 @@
 	            renderer.batch(function(context) {
 	                botDebugRenderer.draw(entity, spatial, context);
 	                healthBarRenderer.draw(entity, spatial, context);
+	                componentDebugRenderer.draw(entity, context);
 
 	                var center = spatial.center;
 
@@ -1952,6 +1990,9 @@
 
 	            velocity.x *= friction.resistance;
 	            velocity.y *= friction.resistance;
+
+	            if(Math.abs(velocity.x) < 0.001) { velocity.x = 0; }
+	            if(Math.abs(velocity.y) < 0.001) { velocity.y = 0; }
 	        }
 	    };
 
@@ -2075,25 +2116,35 @@
 /* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var _ = __webpack_require__(5);
+
 	module.exports = (function () {
 	    function Loader() {
 	        this.assets = {};
 	    };
 
 	    Loader.prototype = {
-	        load: function (images, callback) {
+	        load: function (requiredAssets, callback) {
+	            var totalRequired = requiredAssets.length;
+	            var totalLoaded = 0;
+	            if(totalRequired === 0) callback();
+
 	            var assets = this.assets;
 
-	            var name = 'player';
-	            var src = 'images/player.gif';
+	            _.each(requiredAssets, function(requiredAsset) {
+	                var name = requiredAsset.name;
+	                var src = requiredAsset.src;
 
-	            var image = new Image();
-	            image.onload = function () {
-	                assets[name] = image;
-
-	                callback(assets);
-	            };
-	            image.src = src;
+	                var image = new Image();
+	                image.onload = function() {
+	                    assets[name] = image;
+	                    totalLoaded++;
+	                    if(totalLoaded === totalRequired) {
+	                        callback();
+	                    }
+	                };
+	                image.src = src;
+	            });
 	        }
 	    };
 
@@ -2365,6 +2416,10 @@
 	    height: 100,
 	    color: undefined,
 	    graphic: undefined
+	}, {
+	    toString: function() {
+	        return JSON.stringify({ width: this.width, height: this.height}, null, 4);
+	    }
 	});
 
 /***/ },

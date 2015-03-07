@@ -19,6 +19,32 @@ var Render = (function () {
         };
     })();
 
+    var componentDebugRenderer = (function() {
+        return {
+            draw: function(entity, context, size) {
+                if (!entity.getComponent('camera')) return;
+
+                var capitalizeFirst = function(string) { return string[0].toUpperCase() + string.substr(1) }
+                var componentDebug = _.flatten(_.map(entity.components, function(component) {
+                    var debugged = _.drop(component.toString().split('\n'));
+
+                    var tag = capitalizeFirst(component.tag);
+                    var splitter = debugged.length === 0 ? '{ }' : '{';
+                    return [tag + ': ' + splitter].concat(debugged);
+                }));
+
+                var lines = ['Components for entity #' + entity.id + ' - '].concat(componentDebug);
+
+                context.fillStyle = 'black';
+                context.font = '15px serif';
+
+                _.each(lines, function(line, index) {
+                    context.fillText(line, 15, 15 * (index + 1));
+                });
+            }
+        }
+    })();
+
     var healthBarRenderer = (function() {
         var calculateHealthBar = function(health, spatial) {
             var healthBarTotalWidth = 180;
@@ -104,6 +130,7 @@ var Render = (function () {
             renderer.batch(function(context) {
                 botDebugRenderer.draw(entity, spatial, context);
                 healthBarRenderer.draw(entity, spatial, context);
+                componentDebugRenderer.draw(entity, context);
 
                 var center = spatial.center;
 

@@ -17,7 +17,10 @@ window.onload = function () {
 
     world.renderer = new Renderer(document.body).setUp(world);
 
-    assetManager.load([], function () {
+    assetManager.load([
+        { src: 'images/player.gif', name: 'player' },
+        { src: 'images/enemy.gif', name: 'enemy' }
+    ], function () {
         runner.queue(function () {
             systemManager.update(world);
         })

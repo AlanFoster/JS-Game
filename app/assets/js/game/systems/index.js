@@ -30,31 +30,39 @@ var RandomEntityCreatorSystem = (function() {
 
             var assetManager = world.assetManager;
 
-            var entity = this.entityManager.createEntity()
-                                            .addComponent(new Components.Rendered({
-                                                width: 66,
-                                                height: 66,
-                                                //color: colors[random(0, colors.length)]
-                                                graphic: assetManager.assets.player
-                                            }))
-                                            .addComponent(new Components.Velocity({
-                                                x: 0,
-                                                y: 0
-                                            }))
-                                            .addComponent(new Components.Spatial({
-                                                x: 300,
-                                                y: 300,
-                                                width: 66,
-                                                height: 66
-                                            }));
+            var createTank = function(graphic) {
+                var entity = this.entityManager
+                                 .createEntity()
+                                 .addComponent(new Components.Rendered({
+                                     width: 66,
+                                     height: 66,
+                                     graphic: assetManager.assets[graphic]
+                                 }))
+                                 .addComponent(new Components.Velocity({
+                                     x: 0,
+                                     y: 0
+                                 }))
+                                 .addComponent(new Components.Spatial({
+                                     x: random(150, 300),
+                                     y: random(150, 300),
+                                     width: 66,
+                                     height: 66
+                                 }))
+                                 .addComponent(new Components.Acceleration({ power: 0.3, maxSpeed: 5 }))
+                                 .addComponent(new Components.Friction({}))
+                                 .addComponent(new Components.Health({ current: random(0, 20), maximum: 20 }))
 
-            entity.addComponent(new Components.Acceleration({ power: 2, maxSpeed: 15 }))
-                  .addComponent(new Components.Friction({}))
-                  .addComponent(new Components.Camera({}))
-                  .addComponent(new Components.Health({ current: random(0, 20), maximum: 20 }))
-                  .addComponent(new Components.Bot({
+                return entity;
+            }.bind(this);
 
-                  }));
+            var player = createTank('player').addComponent(new Components.Camera({}))
+                                             .addComponent(new Components.Keyboard({}))
+
+
+            for(var i = 0; i < 4; i++ ) {
+                createTank('enemy').addComponent(new Components.Bot());
+            }
+
         }
     };
 

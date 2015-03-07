@@ -28,6 +28,9 @@ var Friction = (function() {
 
             velocity.x *= friction.resistance;
             velocity.y *= friction.resistance;
+
+            if(Math.abs(velocity.x) < 0.001) { velocity.x = 0; }
+            if(Math.abs(velocity.y) < 0.001) { velocity.y = 0; }
         }
     };
 

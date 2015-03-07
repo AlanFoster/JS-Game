@@ -5,4 +5,8 @@ module.exports = Components.create('rendered', {
     height: 100,
     color: undefined,
     graphic: undefined
+}, {
+    toString: function() {
+        return JSON.stringify({ width: this.width, height: this.height}, null, 4);
+    }
 });

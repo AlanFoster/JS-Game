@@ -31,7 +31,7 @@ describe 'spatial component', ->
       it 'stores the component tag', ->
         expect(@instance.tag).toBe expectedTagName
 
-      fit 'stores the center', ->
+      it 'stores the center', ->
         expect(@instance.center).toEqual { x: 21, y: 37}
 
       it 'caps rotation to positive', ->
@@ -57,7 +57,7 @@ describe 'spatial component', ->
       it 'stores height', ->
         expect(@instance.height).toBe 0
 
-      fit 'stores the center', ->
+      it 'stores the center', ->
         expect(@instance.center).toEqual { x: 0, y: 0}
 
       it 'defaults rotation', ->
