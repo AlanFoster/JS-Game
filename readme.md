@@ -31,7 +31,7 @@ gulp test
 
 Running one test in isolation
 
-``coffeescript
+```coffeescript
 fdescribe '...', ->
     ffit '...', ->
 ```
