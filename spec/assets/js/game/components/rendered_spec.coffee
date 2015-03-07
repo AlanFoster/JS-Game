@@ -29,7 +29,10 @@ describe 'rendered component', ->
       instance = new subject({})
 
       it 'has a default color', ->
-        expect(instance.color).toBe 'red'
+        expect(instance.color).toBeUndefined()
+
+      it 'has a default graphic', ->
+        expect(instance.graphic).toBeUndefined()
 
       it 'has a default width', ->
         expect(instance.width).toBe 100

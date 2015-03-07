@@ -2,8 +2,65 @@ var _ = require('underscore');
 
 var Render = (function () {
     var System = function () {
-
     };
+
+    var botDebugRenderer = (function() {
+        return {
+            draw: function (entity, spatial, context) {
+                var botComponent = entity.getComponent('bot');
+                if (botComponent && botComponent.target) {
+                    var x = botComponent.target.x;
+                    var y = botComponent.target.y;
+
+                    context.fillStyle = 'blue';
+                    context.fillRect(x, y, 5, 5);
+                }
+            }
+        };
+    })();
+
+    var healthBarRenderer = (function() {
+        var calculateHealthBar = function(health, spatial) {
+            var healthBarTotalWidth = 180;
+            return {
+                totalWidth: healthBarTotalWidth,
+                height: 18,
+                greenBarWidth: health.percentage() * healthBarTotalWidth,
+
+                drawAt: {
+                    x: spatial.center.x - healthBarTotalWidth / 2,
+                    y: spatial.y - 45
+                }
+            };
+        };
+
+        var colors = {
+            background: 'red',
+            foreground: '#6CDE68',
+            border: '#135E2F'
+        };
+
+        return {
+            draw: function(entity, spatial, context) {
+                var health = entity.getComponent('health');
+                if (!health) return;
+
+                var healthBar = calculateHealthBar(health, spatial);
+
+                context.fillStyle = colors.background;
+                context.fillRect(healthBar.drawAt.x, healthBar.drawAt.y, healthBar.totalWidth, healthBar.height);
+
+                context.fillStyle = colors.foreground;
+                context.fillRect(healthBar.drawAt.x, healthBar.drawAt.y, healthBar.greenBarWidth, healthBar.height);
+
+                context.strokeStyle = colors.border;
+                context.lineWidth = 2;
+                context.beginPath();
+                context.rect(healthBar.drawAt.x, healthBar.drawAt.y, healthBar.totalWidth, healthBar.height);
+                context.stroke()
+            }
+        }
+    })();
 
     System.prototype = {
         setUp: function () {
@@ -13,6 +70,8 @@ var Render = (function () {
             var entityWithCamera = _.find(entities, function(entity) {
                 return entity.getComponent('camera')
             });
+
+            if (!entityWithCamera) return { x: 0, y: 0 };
 
             var spatial = entityWithCamera.getComponent('spatial');
             var rendered = entityWithCamera.getComponent('rendered');
@@ -43,14 +102,8 @@ var Render = (function () {
             var spatial = components.spatial;
 
             renderer.batch(function(context) {
-                var foo = entity.getComponent('bot');
-                if(foo && foo.target) {
-                    var x = foo.target.x;
-                    var y = foo.target.y;
-
-                    context.fillStyle = 'blue';
-                    context.fillRect(x, y, 5, 5);
-                };
+                botDebugRenderer.draw(entity, spatial, context);
+                healthBarRenderer.draw(entity, spatial, context);
 
                 var center = spatial.center;
 

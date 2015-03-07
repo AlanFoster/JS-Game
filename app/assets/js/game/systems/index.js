@@ -42,8 +42,8 @@ var RandomEntityCreatorSystem = (function() {
                                                 y: 0
                                             }))
                                             .addComponent(new Components.Spatial({
-                                                x: 0,
-                                                y: 0,
+                                                x: 300,
+                                                y: 300,
                                                 width: 66,
                                                 height: 66
                                             }));
@@ -51,6 +51,7 @@ var RandomEntityCreatorSystem = (function() {
             entity.addComponent(new Components.Acceleration({ power: 2, maxSpeed: 15 }))
                   .addComponent(new Components.Friction({}))
                   .addComponent(new Components.Camera({}))
+                  .addComponent(new Components.Health({ current: random(0, 20), maximum: 20 }))
                   .addComponent(new Components.Bot({
 
                   }));

@@ -7,6 +7,7 @@ var webpack = require('gulp-webpack');
 var configuration = require('./config');
 var watch = require('gulp-watch');
 var clean = require('gulp-clean');
+var plumber = require('gulp-plumber');
 
 var handleError = function(error) {
     var errorContent = error.message
@@ -21,8 +22,8 @@ var handleError = function(error) {
 
 gulp.task('javascript_bundle', function () {
     return gulp.src('app/assets/js/main.js')
+                .pipe(plumber({ errorHandler: handleError }))
                 .pipe(webpack(configuration.webpack))
-                .on('error', handleError)
                 .pipe(gulp.dest('dist/js'));
 });
 

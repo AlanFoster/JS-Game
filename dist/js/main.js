@@ -56,8 +56,8 @@
 	        assetManager: assetManager,
 
 	        size: {
-	            width: window.innerWidth,
-	            height: window.innerHeight
+	            width: window.innerWidth - 30,
+	            height: window.innerHeight - 30
 	        }
 	    };
 
@@ -98,6 +98,7 @@
 	            var context = this.context;
 
 	            context.clearRect(0, 0, this.size.width, this.size.height);
+	            context.moveTo(0, 0);
 	        },
 	        batch: function(drawingFunction) {
 	            var context = this.context;
@@ -173,8 +174,8 @@
 	                                                y: 0
 	                                            }))
 	                                            .addComponent(new Components.Spatial({
-	                                                x: 0,
-	                                                y: 0,
+	                                                x: 300,
+	                                                y: 300,
 	                                                width: 66,
 	                                                height: 66
 	                                            }));
@@ -182,6 +183,7 @@
 	            entity.addComponent(new Components.Acceleration({ power: 2, maxSpeed: 15 }))
 	                  .addComponent(new Components.Friction({}))
 	                  .addComponent(new Components.Camera({}))
+	                  .addComponent(new Components.Health({ current: random(0, 20), maximum: 20 }))
 	                  .addComponent(new Components.Bot({
 
 	                  }));
@@ -1786,8 +1788,65 @@
 
 	var Render = (function () {
 	    var System = function () {
-
 	    };
+
+	    var botDebugRenderer = (function() {
+	        return {
+	            draw: function (entity, spatial, context) {
+	                var botComponent = entity.getComponent('bot');
+	                if (botComponent && botComponent.target) {
+	                    var x = botComponent.target.x;
+	                    var y = botComponent.target.y;
+
+	                    context.fillStyle = 'blue';
+	                    context.fillRect(x, y, 5, 5);
+	                }
+	            }
+	        };
+	    })();
+
+	    var healthBarRenderer = (function() {
+	        var calculateHealthBar = function(health, spatial) {
+	            var healthBarTotalWidth = 180;
+	            return {
+	                totalWidth: healthBarTotalWidth,
+	                height: 18,
+	                greenBarWidth: health.percentage() * healthBarTotalWidth,
+
+	                drawAt: {
+	                    x: spatial.center.x - healthBarTotalWidth / 2,
+	                    y: spatial.y - 45
+	                }
+	            };
+	        };
+
+	        var colors = {
+	            background: 'red',
+	            foreground: '#6CDE68',
+	            border: '#135E2F'
+	        };
+
+	        return {
+	            draw: function(entity, spatial, context) {
+	                var health = entity.getComponent('health');
+	                if (!health) return;
+
+	                var healthBar = calculateHealthBar(health, spatial);
+
+	                context.fillStyle = colors.background;
+	                context.fillRect(healthBar.drawAt.x, healthBar.drawAt.y, healthBar.totalWidth, healthBar.height);
+
+	                context.fillStyle = colors.foreground;
+	                context.fillRect(healthBar.drawAt.x, healthBar.drawAt.y, healthBar.greenBarWidth, healthBar.height);
+
+	                context.strokeStyle = colors.border;
+	                context.lineWidth = 2;
+	                context.beginPath();
+	                context.rect(healthBar.drawAt.x, healthBar.drawAt.y, healthBar.totalWidth, healthBar.height);
+	                context.stroke()
+	            }
+	        }
+	    })();
 
 	    System.prototype = {
 	        setUp: function () {
@@ -1797,6 +1856,8 @@
 	            var entityWithCamera = _.find(entities, function(entity) {
 	                return entity.getComponent('camera')
 	            });
+
+	            if (!entityWithCamera) return { x: 0, y: 0 };
 
 	            var spatial = entityWithCamera.getComponent('spatial');
 	            var rendered = entityWithCamera.getComponent('rendered');
@@ -1827,14 +1888,8 @@
 	            var spatial = components.spatial;
 
 	            renderer.batch(function(context) {
-	                var foo = entity.getComponent('bot');
-	                if(foo && foo.target) {
-	                    var x = foo.target.x;
-	                    var y = foo.target.y;
-
-	                    context.fillStyle = 'blue';
-	                    context.fillRect(x, y, 5, 5);
-	                };
+	                botDebugRenderer.draw(entity, spatial, context);
+	                healthBarRenderer.draw(entity, spatial, context);
 
 	                var center = spatial.center;
 
@@ -2001,7 +2056,6 @@
 	                    }
 
 	                    bot.roamCount = (bot.roamCount + 1) % 2000;
-	                    console.log(bot.roamCount);
 	                    if (bot.roamCount == 0) {
 	                        changeState(bot);
 	                    }
@@ -2160,6 +2214,7 @@
 	    'Acceleration',
 	    'Keyboard',
 	    'Friction',
+	    'Health',
 	    'Camera',
 	    'Bot'
 	], function(tag) {
@@ -2206,16 +2261,18 @@
 		"./camera.js": 21,
 		"./friction": 22,
 		"./friction.js": 22,
+		"./health": 23,
+		"./health.js": 23,
 		"./index": 16,
 		"./index.js": 16,
-		"./keyboard": 23,
-		"./keyboard.js": 23,
-		"./rendered": 24,
-		"./rendered.js": 24,
-		"./spatial": 25,
-		"./spatial.js": 25,
-		"./velocity": 26,
-		"./velocity.js": 26
+		"./keyboard": 24,
+		"./keyboard.js": 24,
+		"./rendered": 25,
+		"./rendered.js": 25,
+		"./spatial": 26,
+		"./spatial.js": 26,
+		"./velocity": 27,
+		"./velocity.js": 27
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -2235,7 +2292,7 @@
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(27);
+	var Components = __webpack_require__(28);
 
 	module.exports = Components.create('acceleration', {
 	    power: 0.2,
@@ -2247,7 +2304,7 @@
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(27);
+	var Components = __webpack_require__(28);
 
 	module.exports = Components.create('bot', {
 	    state: 'roam',
@@ -2259,7 +2316,7 @@
 /* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(27);
+	var Components = __webpack_require__(28);
 
 	module.exports = Components.create('camera', {
 	});
@@ -2268,7 +2325,7 @@
 /* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(27);
+	var Components = __webpack_require__(28);
 
 	module.exports = Components.create('friction', {
 	    resistance: 0.9
@@ -2278,15 +2335,30 @@
 /* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(27);
+	var Components = __webpack_require__(28);
 
-	module.exports = Components.create('keyboard', {});
+	module.exports = Components.create('health', {
+	    current: 50,
+	    maximum: 100
+	}, {
+	    percentage: function() {
+	        return this.current / this.maximum;
+	    }
+	});
 
 /***/ },
 /* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(27);
+	var Components = __webpack_require__(28);
+
+	module.exports = Components.create('keyboard', {});
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(28);
 
 	module.exports = Components.create('rendered', {
 	    width: 100,
@@ -2296,59 +2368,43 @@
 	});
 
 /***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(27);
-	var _ = __webpack_require__(5);
-	var MathHelper = __webpack_require__(17);
-
-	module.exports = (function() {
-	    var Component = function(values) {
-	        values = values || {};
-
-	        Object.defineProperty(this, 'rotation', {
-	            set: function(value) {
-	                this._rotation = MathHelper.normalizeRadians(value);
-	            },
-	            get: function() {
-	                return this._rotation;
-	            }
-	        });
-
-	        Object.defineProperty(this, 'center', {
-	            get: function() {
-	                var x = this.x + (this.width / 2);
-	                var y = this.y + (this.height / 2);
-
-	                return { x: x, y: y }
-	            }
-	        });
-
-	        this.x = _.isUndefined(values.x) ? 0 : values.x;
-	        this.y = _.isUndefined(values.y) ? 0 : values.y;
-
-	        this.width = _.isUndefined(values.width) ? 0 : values.width;
-	        this.height = _.isUndefined(values.height) ? 0 : values.height;
-
-	        this.rotation = _.isUndefined(values.rotation) ?  0 : values.rotation;
-	    };
-
-	    Component.prototype = {
-	        tag: 'spatial',
-	        toString: function() {
-	            return JSON.stringify(this, null, 4)
-	        }
-	    };
-
-	    return Component;
-	})();
-
-/***/ },
 /* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(27);
+	var Components = __webpack_require__(28);
+	var _ = __webpack_require__(5);
+	var MathHelper = __webpack_require__(17);
+
+	module.exports = Components.create('spatial', {
+	    x: 0,
+	    y: 0,
+	    width: 0,
+	    height: 0,
+	    rotation: 0
+	}, {}, {
+	    rotation: {
+	        set: function (value) {
+	            this._rotation = MathHelper.normalizeRadians(value);
+	        },
+	        get: function () {
+	            return this._rotation;
+	        }
+	    },
+	    center: {
+	        get: function() {
+	            var x = this.x + (this.width / 2);
+	            var y = this.y + (this.height / 2);
+
+	            return { x: x, y: y }
+	        }
+	    }
+	});
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(28);
 
 	module.exports = Components.create('velocity', {
 	    x: 0,
@@ -2356,10 +2412,11 @@
 	});
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(5);
+	var MathHelper = __webpack_require__(17);
 
 	var safeAccess = function(hash) {
 	    return function(key, fallback) {
@@ -2368,21 +2425,28 @@
 	    };
 	};
 
-	module.exports.create = function(tag, properties) {
+	module.exports.create = function(tag, properties, prototype, computedProperties) {
+	    prototype = prototype || { };
+	    computedProperties = computedProperties || { };
+
 	    var Component = function(instanceProperties) {
 	        instanceProperties = instanceProperties || {};
 
+	        _.each(computedProperties, function(computation, property) {
+	            Object.defineProperty(this, property, computation);
+	        }, this);
+
 	        _.each(properties, function(fallback, property) {
 	            this[property] = safeAccess(instanceProperties)(property, fallback)
-	        }, this)
+	        }, this);
 	    };
 
-	    Component.prototype = {
+	    Component.prototype = _.extend({
 	        tag: tag,
 	        toString: function() {
 	            return JSON.stringify(this, null, 4)
 	        }
-	    };
+	    }, prototype);
 
 	    return Component;
 	};

@@ -7,6 +7,7 @@ var allComponents = _.object(_.map([
     'Acceleration',
     'Keyboard',
     'Friction',
+    'Health',
     'Camera',
     'Bot'
 ], function(tag) {

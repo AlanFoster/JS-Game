@@ -9,6 +9,7 @@ describe 'Components Index', ->
     'Acceleration',
     'Keyboard',
     'Friction',
+    'Health',
     'Camera',
     'Bot'
   ]

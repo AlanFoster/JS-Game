@@ -10,8 +10,8 @@ window.onload = function () {
         assetManager: assetManager,
 
         size: {
-            width: window.innerWidth,
-            height: window.innerHeight
+            width: window.innerWidth - 30,
+            height: window.innerHeight - 30
         }
     };
 
@@ -52,6 +52,7 @@ var Renderer = (function () {
             var context = this.context;
 
             context.clearRect(0, 0, this.size.width, this.size.height);
+            context.moveTo(0, 0);
         },
         batch: function(drawingFunction) {
             var context = this.context;

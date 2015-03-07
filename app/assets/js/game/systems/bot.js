@@ -90,7 +90,6 @@ var Movement = (function () {
                     }
 
                     bot.roamCount = (bot.roamCount + 1) % 2000;
-                    console.log(bot.roamCount);
                     if (bot.roamCount == 0) {
                         changeState(bot);
                     }

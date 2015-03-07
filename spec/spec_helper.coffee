@@ -1,2 +1,2 @@
-window.context = -> (_message, body) ->
-    body()
+window.context = describe
+window.fcontext = fdescribe
