@@ -19,7 +19,8 @@ window.onload = function () {
 
     assetManager.load([
         { src: 'images/player.gif', name: 'player' },
-        { src: 'images/enemy.gif', name: 'enemy' }
+        { src: 'images/enemy.gif', name: 'enemy' },
+        { src: 'images/bullet.png', name: 'bullet' }
     ], function () {
         runner.queue(function () {
             systemManager.update(world);

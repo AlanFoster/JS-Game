@@ -77,9 +77,9 @@ var Movement = (function () {
 
                 case 'roaming':
                     spatial.rotation = rotateTowardsSmoothly(spatial, bot.target);
-
-                    velocity.x = 2;
-                    velocity.y = 2;
+                    entity.getComponent('shootable').firing = true;
+                    velocity.x = 1.8;
+                    velocity.y = 1.8;
 
                     spatial.x += velocity.x * Math.cos(spatial.rotation);
                     spatial.y += velocity.y * Math.sin(spatial.rotation);

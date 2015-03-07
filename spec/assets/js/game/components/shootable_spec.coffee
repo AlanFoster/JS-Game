@@ -25,7 +25,7 @@ describe 'shootable component', ->
       it 'has a tag', ->
         expect(@instance.tag).toBe expectedTagName
 
-    fcontext 'no values supplied', ->
+    context 'no values supplied', ->
       beforeEach ->
         @instance = new subject
 

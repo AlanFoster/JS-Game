@@ -5,6 +5,7 @@ var MovementSystem = require('./movement');
 var RenderSystem = require('./render');
 var FrictionSystem = require('./friction');
 var BotSystem = require('./bot');
+var ShootableSystem = require('./shootable');
 
 var Components = require('./../components/index')
 var RandomEntityCreatorSystem = (function() {
@@ -51,6 +52,7 @@ var RandomEntityCreatorSystem = (function() {
                                  .addComponent(new Components.Acceleration({ power: 0.3, maxSpeed: 5 }))
                                  .addComponent(new Components.Friction({}))
                                  .addComponent(new Components.Health({ current: random(0, 20), maximum: 20 }))
+                                 .addComponent(new Components.Shootable({}))
 
                 return entity;
             }.bind(this);
@@ -58,8 +60,7 @@ var RandomEntityCreatorSystem = (function() {
             var player = createTank('player').addComponent(new Components.Camera({}))
                                              .addComponent(new Components.Keyboard({}))
 
-
-            for(var i = 0; i < 1; i++ ) {
+            for(var i = 0; i < 2; i++ ) {
                 createTank('enemy').addComponent(new Components.Bot());
             }
 
@@ -77,6 +78,7 @@ module.exports = {
             new BotSystem(),
             new FrictionSystem(),
             new MovementSystem(),
+            new ShootableSystem(),
             new RandomEntityCreatorSystem(entityManager),
             new RenderSystem(renderTarget)
         ]);

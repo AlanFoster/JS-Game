@@ -14,11 +14,46 @@ var Keyboard = (function() {
         }
     };
 
+    var processMovement = function(entity, components, keysDown) {
+        var velocity = components.velocity;
+        var spatial = components.spatial;
+        var acceleration = components.acceleration;
+
+        var velocityUpdates = [];
+
+        var power = acceleration.power;
+        var maxSpeed = acceleration.maxSpeed;
+        var rotation = acceleration.turningSpeed;
+
+        if(keysDown.left) velocityUpdates.push({ x: 0, y: 0, rotation: -rotation });
+        if(keysDown.right) velocityUpdates.push({ x: 0, y: 0, rotation: rotation });
+
+        if(keysDown.up) velocityUpdates.push({ x: power, y: power, rotation: 0 });
+        if(keysDown.down) velocityUpdates.push({ x: -power, y: -power, rotation: 0 });
+
+        _.each(velocityUpdates, function(update) {
+            velocity.x = clamp(velocity.x + update.x)({ from : -maxSpeed, to: maxSpeed });
+            velocity.y = clamp(velocity.y + update.y)({ from : -maxSpeed, to: maxSpeed });
+
+            spatial.rotation += update.rotation
+        });
+    };
+
+    var processShooting = function(entity, components, keysDown) {
+        var shootable = entity.getComponent('shootable');
+        if(!shootable) return;
+
+        if(keysDown.space) {
+            shootable.firing = true;
+        }
+    };
+
     var keyMappings = {
         37: 'left',
         38: 'up',
         39: 'right',
-        40: 'down'
+        40: 'down',
+        32: 'space'
     };
 
     System.prototype = {
@@ -47,28 +82,8 @@ var Keyboard = (function() {
 
         },
         process: function(entity, components) {
-            var velocity = components.velocity;
-            var spatial = components.spatial;
-            var acceleration = components.acceleration;
-
-            var velocityUpdates = [];
-
-            var power = acceleration.power;
-            var maxSpeed = acceleration.maxSpeed;
-            var rotation = acceleration.turningSpeed;
-
-            if(this.keysDown.left) velocityUpdates.push({ x: 0, y: 0, rotation: -rotation });
-            if(this.keysDown.right) velocityUpdates.push({ x: 0, y: 0, rotation: rotation });
-
-            if(this.keysDown.up) velocityUpdates.push({ x: power, y: power, rotation: 0 });
-            if(this.keysDown.down) velocityUpdates.push({ x: -power, y: -power, rotation: 0 });
-
-            _.each(velocityUpdates, function(update) {
-                velocity.x = clamp(velocity.x + update.x)({ from : -maxSpeed, to: maxSpeed });
-                velocity.y = clamp(velocity.y + update.y)({ from : -maxSpeed, to: maxSpeed });
-
-                spatial.rotation += update.rotation
-            });
+            processMovement(entity, components, this.keysDown);
+            processShooting(entity, components, this.keysDown);
         }
     };
 
