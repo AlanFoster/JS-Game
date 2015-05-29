@@ -1,5 +1,6 @@
-Entitys, Components, Systems
+Entitys, Components, Systems [![Build Status](https://travis-ci.org/AlanFoster/JS-Game.svg?branch=master)](https://travis-ci.org/AlanFoster/JS-Game)
 ============================
+
 
 Basic test for an Entity Component System
 
