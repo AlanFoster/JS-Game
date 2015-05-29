@@ -101,10 +101,7 @@ var Render = (function () {
 
             var spatial = entityWithCamera.getComponent('spatial');
             var rendered = entityWithCamera.getComponent('rendered');
-            var camera = {
-                x: spatial.x + (rendered.width / 2),
-                y: spatial.y + (rendered.height / 2)
-            };
+            var camera = spatial.center;
 
             return camera;
         },
@@ -120,26 +117,29 @@ var Render = (function () {
                 var spatial = entity.getComponent('spatial');
                 if (!rendered || !spatial) return;
 
-                process(entity, {rendered: rendered, spatial: spatial}, camera, renderer)
+                process(entity, {rendered: rendered, spatial: spatial}, camera, renderer, world)
             })
         },
-        process: function (entity, components, camera, renderer) {
+        process: function (entity, components, camera, renderer, world) {
             var rendered = components.rendered;
             var spatial = components.spatial;
 
             renderer.batch(function(context) {
-                botDebugRenderer.draw(entity, spatial, context);
-                healthBarRenderer.draw(entity, spatial, context);
+                //botDebugRenderer.draw(entity, spatial, context);
+                //healthBarRenderer.draw(entity, spatial, context);
                 componentDebugRenderer.draw(entity, context);
 
-                var center = spatial.center;
-
-                var drawAt = {
-                    x: -(spatial.width / 2),
-                    y: -(spatial.height / 2)
+                var viewPort = {
+                    x: camera.x - (world.size.width / 2),
+                    y: camera.y - (world.size.height / 2)
                 };
 
-                context.translate(center.x, center.y);
+                var drawAt = {
+                    x: spatial.center.x - viewPort.x,
+                    y: spatial.center.y - viewPort.y
+                };
+
+                context.translate(drawAt.x + (spatial.width / 2), drawAt.y + (spatial.height / 2));
 
                 context.rotate(spatial.rotation);
 
@@ -147,7 +147,7 @@ var Render = (function () {
                     context.fillStyle = rendered.color;
                     context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
                 } else if(rendered.graphic) {
-                    context.drawImage(rendered.graphic, drawAt.x, drawAt.y);
+                    context.drawImage(rendered.graphic, -(spatial.width / 2), -(spatial.height / 2));
                 }
             });
 

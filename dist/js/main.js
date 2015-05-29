@@ -193,11 +193,16 @@
 	                return entity;
 	            }.bind(this);
 
-	            var player = createTank('player').addComponent(new Components.Camera({}))
-	                                             .addComponent(new Components.Keyboard({}))
+	            var player = createTank('player').addComponent(new Components.Keyboard({}))
+	                                              //.addComponent(new Components.Camera({}))
 
-	            for(var i = 0; i < 2; i++ ) {
-	                createTank('enemy').addComponent(new Components.Bot());
+	            createTank('enemy').addComponent(new Components.Bot())
+
+	            createTank('enemy').addComponent(new Components.Bot())
+
+	            for(var i = 0; i < 1; i++ ) {
+	                createTank('enemy').addComponent(new Components.Bot())
+	                                    .addComponent(new Components.Camera({}))
 	            }
 
 	        }
@@ -1722,6 +1727,14 @@
 	        });
 	    };
 
+	    var changeCamera = function(entities) {
+	        var entityWithCamera = _.find(entities, function(entity) { return entity.getComponent('camera'); });
+	        console.log(entityWithCamera.id)
+	        var camera = entityWithCamera.getComponent('camera');
+	        entityWithCamera.removeComponent('camera');
+	        entities[_.random(0, entities.length - 1)].addComponent(camera);
+	    };
+
 	    var processShooting = function(entity, components, keysDown) {
 	        var shootable = entity.getComponent('shootable');
 	        if(!shootable) return;
@@ -1736,7 +1749,8 @@
 	        38: 'up',
 	        39: 'right',
 	        40: 'down',
-	        32: 'space'
+	        32: 'space',
+	        13: 'enter'
 	    };
 
 	    System.prototype = {
@@ -1752,6 +1766,10 @@
 	            this.keysDown[key] = event.type == 'keydown';
 	        },
 	        update: function(entities) {
+	            if(this.keysDown.enter) {
+	                changeCamera(entities);
+	            }
+
 	            var process = this.process.bind(this);
 	            entities.forEach(function(entity) {
 	                var velocity = entity.getComponent('velocity');
@@ -1916,10 +1934,7 @@
 
 	            var spatial = entityWithCamera.getComponent('spatial');
 	            var rendered = entityWithCamera.getComponent('rendered');
-	            var camera = {
-	                x: spatial.x + (rendered.width / 2),
-	                y: spatial.y + (rendered.height / 2)
-	            };
+	            var camera = spatial.center;
 
 	            return camera;
 	        },
@@ -1935,26 +1950,29 @@
 	                var spatial = entity.getComponent('spatial');
 	                if (!rendered || !spatial) return;
 
-	                process(entity, {rendered: rendered, spatial: spatial}, camera, renderer)
+	                process(entity, {rendered: rendered, spatial: spatial}, camera, renderer, world)
 	            })
 	        },
-	        process: function (entity, components, camera, renderer) {
+	        process: function (entity, components, camera, renderer, world) {
 	            var rendered = components.rendered;
 	            var spatial = components.spatial;
 
 	            renderer.batch(function(context) {
-	                botDebugRenderer.draw(entity, spatial, context);
-	                healthBarRenderer.draw(entity, spatial, context);
+	                //botDebugRenderer.draw(entity, spatial, context);
+	                //healthBarRenderer.draw(entity, spatial, context);
 	                componentDebugRenderer.draw(entity, context);
 
-	                var center = spatial.center;
-
-	                var drawAt = {
-	                    x: -(spatial.width / 2),
-	                    y: -(spatial.height / 2)
+	                var viewPort = {
+	                    x: camera.x - (world.size.width / 2),
+	                    y: camera.y - (world.size.height / 2)
 	                };
 
-	                context.translate(center.x, center.y);
+	                var drawAt = {
+	                    x: spatial.center.x - viewPort.x,
+	                    y: spatial.center.y - viewPort.y
+	                };
+
+	                context.translate(drawAt.x + (spatial.width / 2), drawAt.y + (spatial.height / 2));
 
 	                context.rotate(spatial.rotation);
 
@@ -1962,7 +1980,7 @@
 	                    context.fillStyle = rendered.color;
 	                    context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
 	                } else if(rendered.graphic) {
-	                    context.drawImage(rendered.graphic, drawAt.x, drawAt.y);
+	                    context.drawImage(rendered.graphic, -(spatial.width / 2), -(spatial.height / 2));
 	                }
 	            });
 

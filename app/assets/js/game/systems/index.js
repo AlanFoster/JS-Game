@@ -57,11 +57,16 @@ var RandomEntityCreatorSystem = (function() {
                 return entity;
             }.bind(this);
 
-            var player = createTank('player').addComponent(new Components.Camera({}))
-                                             .addComponent(new Components.Keyboard({}))
+            var player = createTank('player').addComponent(new Components.Keyboard({}))
+                                              //.addComponent(new Components.Camera({}))
 
-            for(var i = 0; i < 2; i++ ) {
-                createTank('enemy').addComponent(new Components.Bot());
+            createTank('enemy').addComponent(new Components.Bot())
+
+            createTank('enemy').addComponent(new Components.Bot())
+
+            for(var i = 0; i < 1; i++ ) {
+                createTank('enemy').addComponent(new Components.Bot())
+                                    .addComponent(new Components.Camera({}))
             }
 
         }

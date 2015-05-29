@@ -39,6 +39,14 @@ var Keyboard = (function() {
         });
     };
 
+    var changeCamera = function(entities) {
+        var entityWithCamera = _.find(entities, function(entity) { return entity.getComponent('camera'); });
+        console.log(entityWithCamera.id)
+        var camera = entityWithCamera.getComponent('camera');
+        entityWithCamera.removeComponent('camera');
+        entities[_.random(0, entities.length - 1)].addComponent(camera);
+    };
+
     var processShooting = function(entity, components, keysDown) {
         var shootable = entity.getComponent('shootable');
         if(!shootable) return;
@@ -53,7 +61,8 @@ var Keyboard = (function() {
         38: 'up',
         39: 'right',
         40: 'down',
-        32: 'space'
+        32: 'space',
+        13: 'enter'
     };
 
     System.prototype = {
@@ -69,6 +78,10 @@ var Keyboard = (function() {
             this.keysDown[key] = event.type == 'keydown';
         },
         update: function(entities) {
+            if(this.keysDown.enter) {
+                changeCamera(entities);
+            }
+
             var process = this.process.bind(this);
             entities.forEach(function(entity) {
                 var velocity = entity.getComponent('velocity');
