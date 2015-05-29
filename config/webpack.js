@@ -16,7 +16,8 @@ module.exports = {
         ],
         "modulesDirectories": [
             "app/assets/third_party",
-            "app/assets/js"
+            "app/assets/js",
+            "node_modules"
         ]
     }
 };

@@ -8,6 +8,7 @@ var configuration = require('./config');
 var watch = require('gulp-watch');
 var clean = require('gulp-clean');
 var plumber = require('gulp-plumber');
+var argv = require('yargs').argv;
 
 var handleError = function(error) {
     var errorContent = error.message
@@ -44,8 +45,11 @@ gulp.task('clean', function() {
 });
 
 gulp.task('test', function(done) {
+    var config = argv.ci ? '/config/karma.ci.conf'
+                         : '/config/karma.conf.js';
+
     karma.start({
-        configFile: __dirname + '/config/karma.conf.js'
+        configFile: __dirname + config
     }, done)
 });
 

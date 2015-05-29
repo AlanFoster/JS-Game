@@ -64,6 +64,10 @@ module.exports = function(config) {
 
     webpack: _.extend(configuration.webpack, {
         bail: false
-    })
+    }),
+
+    webpackServer: {
+      noInfo: true
+    }
   });
 };
