@@ -58,17 +58,11 @@ var RandomEntityCreatorSystem = (function() {
             }.bind(this);
 
             var player = createTank('player').addComponent(new Components.Keyboard({}))
-                                              //.addComponent(new Components.Camera({}))
+                                              .addComponent(new Components.Camera({}))
 
-            createTank('enemy').addComponent(new Components.Bot())
-
-            createTank('enemy').addComponent(new Components.Bot())
-
-            for(var i = 0; i < 1; i++ ) {
+            for(var i = 0; i < 3; i++ ) {
                 createTank('enemy').addComponent(new Components.Bot())
-                                    .addComponent(new Components.Camera({}))
             }
-
         }
     };
 
