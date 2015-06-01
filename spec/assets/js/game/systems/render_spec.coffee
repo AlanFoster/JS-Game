@@ -34,14 +34,14 @@ describe 'Render System', ->
           @invalidEntity1
           @validEntity
         ]
-        @instance.update entities, @world
+        @instance.update entities, @world,
 
       it 'called processed the required entities', ->
         expectedComponents =
           rendered: @rendered
           spatial: @spatial
 
-        expect(@instance.process).toHaveBeenCalledWith @validEntity, expectedComponents, {x: 0, y: 0}, @renderer
+        expect(@instance.process).toHaveBeenCalledWith @validEntity, expectedComponents, {x: 0, y: 0}, @renderer, @world
 
       it 'did not process invalid entity 1', ->
         expect(@instance.process).not.toHaveBeenCalledWith @invalidEntity1, jasmine.any(Object)

@@ -25,6 +25,7 @@ var Keyboard = (function() {
         var maxSpeed = acceleration.maxSpeed;
         var rotation = acceleration.turningSpeed;
 
+
         if(keysDown.left) velocityUpdates.push({ x: 0, y: 0, rotation: -rotation });
         if(keysDown.right) velocityUpdates.push({ x: 0, y: 0, rotation: rotation });
 
@@ -92,7 +93,6 @@ var Keyboard = (function() {
 
                 process(entity, { velocity: velocity, keyboard: keyboard, spatial: spatial, acceleration: acceleration })
             });
-
         },
         process: function(entity, components) {
             processMovement(entity, components, this.keysDown);

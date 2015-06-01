@@ -63,6 +63,7 @@ module.exports = function(config) {
     singleRun: false,
 
     webpack: _.extend(configuration.webpack, {
+        devtool: 'inline-source-map',
         bail: false
     }),
 
