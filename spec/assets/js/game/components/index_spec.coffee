@@ -19,5 +19,5 @@ describe 'Components Index', ->
     expect(Object.keys(subject)).toEqual(expectedEntities)
 
   it 'assigns all values', ->
-    _.each subject, (_key, value) ->
-      expect(value).toMatch(jasmine.any(Function))
+    _.each subject, (value, _key) ->
+      expect(value).toEqual(jasmine.any(Function))

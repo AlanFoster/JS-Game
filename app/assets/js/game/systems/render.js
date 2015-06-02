@@ -125,21 +125,18 @@ var Render = (function () {
             var spatial = components.spatial;
 
             renderer.batch(function(context) {
-                //botDebugRenderer.draw(entity, spatial, context);
-                //healthBarRenderer.draw(entity, spatial, context);
+                botDebugRenderer.draw(entity, spatial, context);
+                healthBarRenderer.draw(entity, spatial, context);
                 componentDebugRenderer.draw(entity, context);
 
-                var viewPort = {
-                    x: camera.x - (world.size.width / 2),
-                    y: camera.y - (world.size.height / 2)
-                };
+                var center = spatial.center;
 
                 var drawAt = {
-                    x: spatial.center.x - viewPort.x,
-                    y: spatial.center.y - viewPort.y
+                    x: -(spatial.width / 2),
+                    y: -(spatial.height / 2)
                 };
 
-                context.translate(drawAt.x + (spatial.width / 2), drawAt.y + (spatial.height / 2));
+                context.translate(center.x, center.y);
 
                 context.rotate(spatial.rotation);
 
@@ -147,7 +144,7 @@ var Render = (function () {
                     context.fillStyle = rendered.color;
                     context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
                 } else if(rendered.graphic) {
-                    context.drawImage(rendered.graphic, -(spatial.width / 2), -(spatial.height / 2));
+                    context.drawImage(rendered.graphic, drawAt.x, drawAt.y);
                 }
             });
 

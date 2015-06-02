@@ -92,7 +92,8 @@ describe 'Keyboard System', ->
           @velocity = new Velocity x: 0, y: 0
           @acceleration = new Acceleration power: 1, maxSpeed: 5, turningSpeed: 1
           @spatial = new Spatial x: 0, y: 0, rotation: 0
-          @instance.process({}, {velocity: @velocity, acceleration: @acceleration, spatial: @spatial})
+          entity = { getComponent: (name) -> { } };
+          @instance.process(entity, {velocity: @velocity, acceleration: @acceleration, spatial: @spatial})
 
         it 'increases X velocity', ->
           expect(@velocity.x).toBe x
@@ -118,7 +119,8 @@ describe 'Keyboard System', ->
           @spatial = new Spatial x: 0, y: 0, rotation: 0
 
           [0..25].forEach () =>
-            @instance.process({}, {velocity: @velocity, acceleration: @acceleration, spatial: @spatial})
+            entity = { getComponent: (name) -> { } };
+            @instance.process(entity, {velocity: @velocity, acceleration: @acceleration, spatial: @spatial})
 
         it 'increases X velocity', ->
           expect(@velocity.x).toBe x
