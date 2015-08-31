@@ -44,24 +44,31 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	window.onload = function () {
-	    var _ = __webpack_require__(5);
-	    var entityManager = __webpack_require__(1).entityManager;
-	    var systemManager = __webpack_require__(3).create();
-	    var assetManager = __webpack_require__(4);
-	    var runner = __webpack_require__(2);
+	var _ = __webpack_require__(1);
+
+	var getWorldSizeFor = function(target) {
+	  return {
+	    width: window.innerWidth - 30,
+	    height: window.innerHeight - 30
+	  };
+	};
+
+	var createWorldFor = function(target) {
+	    var entityManager = __webpack_require__(2).create();
+	    var systemManager = __webpack_require__(6).create(entityManager);
+	    var assetManager = __webpack_require__(28);
+	    var runner = __webpack_require__(30);
+
+	    systemManager.register(new RandomEntityCreatorSystem(entityManager));
 
 	    var world = {
 	        entityManager: entityManager,
 	        assetManager: assetManager,
 
-	        size: {
-	            width: window.innerWidth - 30,
-	            height: window.innerHeight - 30
-	        }
+	        size: getWorldSizeFor(target)
 	    };
 
-	    world.renderer = new Renderer(document.body).setUp(world);
+	    world.renderer = new Renderer(target).setUp(world);
 
 	    assetManager.load([
 	        { src: 'images/player.gif', name: 'player' },
@@ -72,6 +79,10 @@
 	            systemManager.update(world);
 	        })
 	    })
+	};
+
+	window.onload = function () {
+	    createWorldFor(document.getElementById('game'));
 	};
 
 	var Renderer = (function () {
@@ -93,7 +104,6 @@
 
 	            this.context = canvas.getContext('2d');
 
-	            this.target.innerHTML = '';
 	            this.target.appendChild(canvas);
 
 	            return this;
@@ -117,147 +127,70 @@
 	})();
 
 
+	var Components = __webpack_require__(15);
+	var RandomEntityCreatorSystem = (function() {
+	  var System = function(entityManager) {
+	    this.entityManager = entityManager;
+
+	    this.callCount = 0;
+	  };
+
+	  var random = function(min, max) {
+	    return ~~(min + (Math.random() * (max - min)));
+	  };
+
+	  System.prototype = {
+	    update: function(entities, world) {
+	      this.callCount++;
+	      if(this.callCount != 1) return;
+
+	      var colors = [
+	        'red', 'white', 'blue'
+	      ];
+
+	      var assetManager = world.assetManager;
+
+	      var createTank = function(graphic) {
+	        var entity = this.entityManager
+	          .createEntity()
+	          .addComponent(new Components.Rendered({
+	            width: 66,
+	            height: 66,
+	            graphic: assetManager.assets[graphic]
+	          }))
+	          .addComponent(new Components.Velocity({
+	            x: 0,
+	            y: 0
+	          }))
+	          .addComponent(new Components.Spatial({
+	            x: random(150, 300),
+	            y: random(150, 300),
+	            width: 66,
+	            height: 66
+	          }))
+	          .addComponent(new Components.Acceleration({ power: 0.3, maxSpeed: 5 }))
+	          .addComponent(new Components.Friction({}))
+	          .addComponent(new Components.Health({ current: random(0, 20), maximum: 20 }))
+	          .addComponent(new Components.Shootable({}))
+
+	        return entity;
+	      }.bind(this);
+
+	      var player = createTank('player').addComponent(new Components.Keyboard({}))
+	        .addComponent(new Components.Camera({}))
+
+	      for(var i = 0; i < 3; i++ ) {
+	        createTank('enemy').addComponent(new Components.Bot())
+	      }
+	    }
+	  };
+
+	  return System;
+	})();
+
+
 /***/ },
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Entity = __webpack_require__(6);
-	var EntityManager = __webpack_require__(7);
-	var IdGenerator = __webpack_require__(8);
-
-	module.exports = {
-	    entityManager: new EntityManager(Entity, new IdGenerator())
-	};
-
-
-/***/ },
-/* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var runLater = (function() {
-	    var fallback = function(callback) {
-	        var targetFPS = 60;
-	        return window.setTimeout(callback, 1000 / targetFPS);
-	    };
-
-	    return window.requestAnimationFrame || fallback;
-	})();
-
-	var loopEndlessly = function(callback) {
-	    runLater(function() {
-	        loopEndlessly(callback);
-	    });
-	    callback();
-	};
-
-	module.exports = {
-	    queue: loopEndlessly
-	}
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var entityManager = __webpack_require__(1).entityManager;
-	var SystemManager = __webpack_require__(9);
-	var KeyboardSystem = __webpack_require__(10);
-	var MovementSystem = __webpack_require__(11);
-	var RenderSystem = __webpack_require__(12);
-	var FrictionSystem = __webpack_require__(13);
-	var BotSystem = __webpack_require__(14);
-	var ShootableSystem = __webpack_require__(15);
-
-	var Components = __webpack_require__(17)
-	var RandomEntityCreatorSystem = (function() {
-	    var System = function(entityManager) {
-	        this.entityManager = entityManager;
-
-	        this.callCount = 0;
-	    };
-
-	    var random = function(min, max) {
-	        return ~~(min + (Math.random() * (max - min)));
-	    };
-
-	    System.prototype = {
-	        update: function(entities, world) {
-	            this.callCount++;
-	            if(this.callCount != 1) return;
-
-
-	            var colors = [
-	                'red', 'white', 'blue'
-	            ];
-
-	            var assetManager = world.assetManager;
-
-	            var createTank = function(graphic) {
-	                var entity = this.entityManager
-	                                 .createEntity()
-	                                 .addComponent(new Components.Rendered({
-	                                     width: 66,
-	                                     height: 66,
-	                                     graphic: assetManager.assets[graphic]
-	                                 }))
-	                                 .addComponent(new Components.Velocity({
-	                                     x: 0,
-	                                     y: 0
-	                                 }))
-	                                 .addComponent(new Components.Spatial({
-	                                     x: random(150, 300),
-	                                     y: random(150, 300),
-	                                     width: 66,
-	                                     height: 66
-	                                 }))
-	                                 .addComponent(new Components.Acceleration({ power: 0.3, maxSpeed: 5 }))
-	                                 .addComponent(new Components.Friction({}))
-	                                 .addComponent(new Components.Health({ current: random(0, 20), maximum: 20 }))
-	                                 .addComponent(new Components.Shootable({}))
-
-	                return entity;
-	            }.bind(this);
-
-	            var player = createTank('player').addComponent(new Components.Keyboard({}))
-	                                              .addComponent(new Components.Camera({}))
-
-	            for(var i = 0; i < 3; i++ ) {
-	                createTank('enemy').addComponent(new Components.Bot())
-	            }
-	        }
-	    };
-
-	    return System;
-	})();
-
-
-	module.exports = {
-	    create: function(renderTarget) {
-	        var systemManager = new SystemManager([
-	            new KeyboardSystem(window).setUp(),
-	            new BotSystem(),
-	            new FrictionSystem(),
-	            new MovementSystem(),
-	            new ShootableSystem(),
-	            new RandomEntityCreatorSystem(entityManager),
-	            new RenderSystem(renderTarget)
-	        ]);
-
-	        return systemManager;
-	    }
-	};
-
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(5);
-	var Loader = __webpack_require__(16);
-
-	module.exports = new Loader();
-
-/***/ },
-/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.8.3
@@ -1811,8 +1744,24 @@
 
 
 /***/ },
-/* 6 */
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
+
+	var Entity = __webpack_require__(3);
+	var EntityManager = __webpack_require__(4);
+	var IdGenerator = __webpack_require__(5);
+
+	module.exports = {
+	    create: function() {
+	        return new EntityManager(Entity, new IdGenerator());
+	    },
+	    entityManager: 'foo'
+	};
+
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
 
 	var Entity = (function() {
 	    var Entity = function(id) {
@@ -1843,8 +1792,8 @@
 
 
 /***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
+/* 4 */
+/***/ function(module, exports) {
 
 	var EntityManager = (function () {
 	    var EntityManager = function (Entity, idGenerator) {
@@ -1867,8 +1816,8 @@
 	module.exports = EntityManager;
 
 /***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
+/* 5 */
+/***/ function(module, exports) {
 
 	var SequentialIdGenerator = function() {
 	    var count = 0;
@@ -1882,10 +1831,38 @@
 	module.exports = SequentialIdGenerator;
 
 /***/ },
-/* 9 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(5);
+	var SystemManager = __webpack_require__(7);
+	var KeyboardSystem = __webpack_require__(8);
+	var MovementSystem = __webpack_require__(9);
+	var RenderSystem = __webpack_require__(10);
+	var FrictionSystem = __webpack_require__(11);
+	var BotSystem = __webpack_require__(12);
+	var ShootableSystem = __webpack_require__(14);
+
+	module.exports = {
+	    create: function(entityManager) {
+	        var systemManager = new SystemManager([
+	            new KeyboardSystem(window).setUp(),
+	            new BotSystem(),
+	            new FrictionSystem(),
+	            new MovementSystem(),
+	            new ShootableSystem(),
+	            new RenderSystem()
+	        ]);
+
+	        return systemManager;
+	    }
+	};
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(1);
 
 	var Manager = (function() {
 	    var Manager = function(systems) {
@@ -1912,10 +1889,10 @@
 	module.exports = Manager;
 
 /***/ },
-/* 10 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(1);
 
 	var Keyboard = (function() {
 	    var System = function(window) {
@@ -2024,8 +2001,8 @@
 
 
 /***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
+/* 9 */
+/***/ function(module, exports) {
 
 	var Movement = (function() {
 	    var System = function() {
@@ -2058,10 +2035,10 @@
 	module.exports = Movement;
 
 /***/ },
-/* 12 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(1);
 
 	var Render = (function () {
 	    var System = function () {
@@ -2221,10 +2198,10 @@
 
 
 /***/ },
-/* 13 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(1);
 
 	var Friction = (function() {
 	    var System = function(window) {
@@ -2266,10 +2243,10 @@
 	module.exports = Friction;
 
 /***/ },
-/* 14 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var MathHelpers = __webpack_require__(19);
+	var MathHelpers = __webpack_require__(13);
 
 	var Movement = (function () {
 	    var System = function () {
@@ -2377,10 +2354,35 @@
 	module.exports = Movement;
 
 /***/ },
-/* 15 */
+/* 13 */
+/***/ function(module, exports) {
+
+	module.exports = {
+	    twoPI: Math.PI * 2,
+	    angleBetween: function(from, to) {
+	        var x = from.x - to.x;
+	        var y = from.y - to.y;
+	        return Math.atan2(y, x);
+	    },
+	    normalizeRadians: function(value) {
+	        var twoPI = this.twoPI;
+	        var normalizedRadian = value - Math.floor(value / twoPI) * twoPI;
+
+	        return normalizedRadian;
+	    },
+	    distanceBetween: function(from, to) {
+	        var xSquared = Math.pow(from.x - to.x, 2);
+	        var ySquared = Math.pow(from.y - to.y, 2);
+
+	        return Math.sqrt(xSquared + ySquared);
+	    }
+	};
+
+/***/ },
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(17)
+	var Components = __webpack_require__(15)
 
 	var Shootable = (function() {
 	    var System = function() {
@@ -2446,10 +2448,280 @@
 
 
 /***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(1);
+
+	var allComponents = _.object(_.map([
+	    'Rendered',
+	    'Velocity',
+	    'Spatial',
+	    'Acceleration',
+	    'Keyboard',
+	    'Friction',
+	    'Health',
+	    'Camera',
+	    'Bot',
+	    'Shootable'
+	], function(tag) {
+	    return [tag, __webpack_require__(16)("./" + tag.toLowerCase())];
+	}));
+
+	module.exports = allComponents;
+
+/***/ },
 /* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(5);
+	var map = {
+		"./acceleration": 17,
+		"./acceleration.js": 17,
+		"./bot": 19,
+		"./bot.js": 19,
+		"./camera": 20,
+		"./camera.js": 20,
+		"./friction": 21,
+		"./friction.js": 21,
+		"./health": 22,
+		"./health.js": 22,
+		"./index": 15,
+		"./index.js": 15,
+		"./keyboard": 23,
+		"./keyboard.js": 23,
+		"./rendered": 24,
+		"./rendered.js": 24,
+		"./shootable": 25,
+		"./shootable.js": 25,
+		"./spatial": 26,
+		"./spatial.js": 26,
+		"./velocity": 27,
+		"./velocity.js": 27
+	};
+	function webpackContext(req) {
+		return __webpack_require__(webpackContextResolve(req));
+	};
+	function webpackContextResolve(req) {
+		return map[req] || (function() { throw new Error("Cannot find module '" + req + "'.") }());
+	};
+	webpackContext.keys = function webpackContextKeys() {
+		return Object.keys(map);
+	};
+	webpackContext.resolve = webpackContextResolve;
+	module.exports = webpackContext;
+	webpackContext.id = 16;
+
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(18);
+
+	module.exports = Components.create('acceleration', {
+	    power: 0.2,
+	    maxSpeed: 5,
+	    turningSpeed: Math.PI / 180
+	});
+
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(1);
+	var MathHelper = __webpack_require__(13);
+
+	var safeAccess = function(hash) {
+	    return function(key, fallback) {
+	        var value = hash[key];
+	        return _.isUndefined(value) ? fallback : value;
+	    };
+	};
+
+	module.exports.create = function(tag, properties, prototype, computedProperties) {
+	    prototype = prototype || { };
+	    computedProperties = computedProperties || { };
+
+	    var Component = function(instanceProperties) {
+	        instanceProperties = instanceProperties || {};
+
+	        _.each(computedProperties, function(computation, property) {
+	            Object.defineProperty(this, property, computation);
+	        }, this);
+
+	        _.each(properties, function(fallback, property) {
+	            this[property] = safeAccess(instanceProperties)(property, fallback)
+	        }, this);
+	    };
+
+	    Component.prototype = _.extend({
+	        tag: tag,
+	        toString: function() {
+	            return JSON.stringify(this, null, 4)
+	        }
+	    }, prototype);
+
+	    return Component;
+	};
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(18);
+
+	module.exports = Components.create('bot', {
+	    state: 'roam',
+	    counter: 0,
+	    roamCount: 0
+	});
+
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(18);
+
+	module.exports = Components.create('camera', {
+	});
+
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(18);
+
+	module.exports = Components.create('friction', {
+	    resistance: 0.9
+	});
+
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(18);
+
+	module.exports = Components.create('health', {
+	    current: 50,
+	    maximum: 100
+	}, {
+	    percentage: function() {
+	        return this.current / this.maximum;
+	    }
+	});
+
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(18);
+
+	module.exports = Components.create('keyboard', {});
+
+
+/***/ },
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(18);
+
+	module.exports = Components.create('rendered', {
+	    width: 100,
+	    height: 100,
+	    color: undefined,
+	    graphic: undefined
+	}, {
+	    toString: function() {
+	        return JSON.stringify({ width: this.width, height: this.height}, null, 4);
+	    }
+	});
+
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(18);
+
+	module.exports = Components.create('shootable', {
+	    speed: 9,
+	    // In milliseconds
+	    life: 5000,
+	    damage: 0,
+	    // How many ticks before being allowed to shoot again
+	    waitPeriod: 40,
+	    currentWaitPeriod: 0,
+	    // Flag to denote whether we wish to fire a bullet in
+	    // the next logical update
+	    firing: false
+	});
+
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(18);
+	var _ = __webpack_require__(1);
+	var MathHelper = __webpack_require__(13);
+
+	module.exports = Components.create('spatial', {
+	    x: 0,
+	    y: 0,
+	    width: 0,
+	    height: 0,
+	    rotation: 0
+	}, {}, {
+	    rotation: {
+	        set: function (value) {
+	            this._rotation = MathHelper.normalizeRadians(value);
+	        },
+	        get: function () {
+	            return this._rotation;
+	        }
+	    },
+	    center: {
+	        get: function() {
+	            var x = this.x + (this.width / 2);
+	            var y = this.y + (this.height / 2);
+
+	            return { x: x, y: y }
+	        }
+	    }
+	});
+
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Components = __webpack_require__(18);
+
+	module.exports = Components.create('velocity', {
+	    x: 0,
+	    y: 0
+	});
+
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(1);
+	var Loader = __webpack_require__(29);
+
+	module.exports = new Loader();
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(1);
 
 	module.exports = (function () {
 	    function Loader() {
@@ -2485,290 +2757,28 @@
 	})();
 
 /***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
+/* 30 */
+/***/ function(module, exports) {
 
-	var _ = __webpack_require__(5);
+	var runLater = (function() {
+	    var fallback = function(callback) {
+	        var targetFPS = 60;
+	        return window.setTimeout(callback, 1000 / targetFPS);
+	    };
 
-	var allComponents = _.object(_.map([
-	    'Rendered',
-	    'Velocity',
-	    'Spatial',
-	    'Acceleration',
-	    'Keyboard',
-	    'Friction',
-	    'Health',
-	    'Camera',
-	    'Bot',
-	    'Shootable'
-	], function(tag) {
-	    return [tag, __webpack_require__(18)("./" + tag.toLowerCase())];
-	}));
+	    return window.requestAnimationFrame || fallback;
+	})();
 
-	module.exports = allComponents;
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var map = {
-		"./acceleration": 20,
-		"./acceleration.js": 20,
-		"./bot": 21,
-		"./bot.js": 21,
-		"./camera": 22,
-		"./camera.js": 22,
-		"./friction": 23,
-		"./friction.js": 23,
-		"./health": 24,
-		"./health.js": 24,
-		"./index": 17,
-		"./index.js": 17,
-		"./keyboard": 25,
-		"./keyboard.js": 25,
-		"./rendered": 26,
-		"./rendered.js": 26,
-		"./shootable": 27,
-		"./shootable.js": 27,
-		"./spatial": 28,
-		"./spatial.js": 28,
-		"./velocity": 29,
-		"./velocity.js": 29
+	var loopEndlessly = function(callback) {
+	    runLater(function() {
+	        loopEndlessly(callback);
+	    });
+	    callback();
 	};
-	function webpackContext(req) {
-		return __webpack_require__(webpackContextResolve(req));
-	};
-	function webpackContextResolve(req) {
-		return map[req] || (function() { throw new Error("Cannot find module '" + req + "'.") }());
-	};
-	webpackContext.keys = function webpackContextKeys() {
-		return Object.keys(map);
-	};
-	webpackContext.resolve = webpackContextResolve;
-	module.exports = webpackContext;
-	webpackContext.id = 18;
-
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
 
 	module.exports = {
-	    twoPI: Math.PI * 2,
-	    angleBetween: function(from, to) {
-	        var x = from.x - to.x;
-	        var y = from.y - to.y;
-	        return Math.atan2(y, x);
-	    },
-	    normalizeRadians: function(value) {
-	        var twoPI = this.twoPI;
-	        var normalizedRadian = value - Math.floor(value / twoPI) * twoPI;
-
-	        return normalizedRadian;
-	    },
-	    distanceBetween: function(from, to) {
-	        var xSquared = Math.pow(from.x - to.x, 2);
-	        var ySquared = Math.pow(from.y - to.y, 2);
-
-	        return Math.sqrt(xSquared + ySquared);
-	    }
-	};
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(30);
-
-	module.exports = Components.create('acceleration', {
-	    power: 0.2,
-	    maxSpeed: 5,
-	    turningSpeed: Math.PI / 180
-	});
-
-
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(30);
-
-	module.exports = Components.create('bot', {
-	    state: 'roam',
-	    counter: 0,
-	    roamCount: 0
-	});
-
-
-/***/ },
-/* 22 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(30);
-
-	module.exports = Components.create('camera', {
-	});
-
-
-/***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(30);
-
-	module.exports = Components.create('friction', {
-	    resistance: 0.9
-	});
-
-
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(30);
-
-	module.exports = Components.create('health', {
-	    current: 50,
-	    maximum: 100
-	}, {
-	    percentage: function() {
-	        return this.current / this.maximum;
-	    }
-	});
-
-
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(30);
-
-	module.exports = Components.create('keyboard', {});
-
-
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(30);
-
-	module.exports = Components.create('rendered', {
-	    width: 100,
-	    height: 100,
-	    color: undefined,
-	    graphic: undefined
-	}, {
-	    toString: function() {
-	        return JSON.stringify({ width: this.width, height: this.height}, null, 4);
-	    }
-	});
-
-
-/***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(30);
-
-	module.exports = Components.create('shootable', {
-	    speed: 9,
-	    // In milliseconds
-	    life: 5000,
-	    damage: 0,
-	    // How many ticks before being allowed to shoot again
-	    waitPeriod: 40,
-	    currentWaitPeriod: 0,
-	    // Flag to denote whether we wish to fire a bullet in
-	    // the next logical update
-	    firing: false
-	});
-
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(30);
-	var _ = __webpack_require__(5);
-	var MathHelper = __webpack_require__(19);
-
-	module.exports = Components.create('spatial', {
-	    x: 0,
-	    y: 0,
-	    width: 0,
-	    height: 0,
-	    rotation: 0
-	}, {}, {
-	    rotation: {
-	        set: function (value) {
-	            this._rotation = MathHelper.normalizeRadians(value);
-	        },
-	        get: function () {
-	            return this._rotation;
-	        }
-	    },
-	    center: {
-	        get: function() {
-	            var x = this.x + (this.width / 2);
-	            var y = this.y + (this.height / 2);
-
-	            return { x: x, y: y }
-	        }
-	    }
-	});
-
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(30);
-
-	module.exports = Components.create('velocity', {
-	    x: 0,
-	    y: 0
-	});
-
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(5);
-	var MathHelper = __webpack_require__(19);
-
-	var safeAccess = function(hash) {
-	    return function(key, fallback) {
-	        var value = hash[key];
-	        return _.isUndefined(value) ? fallback : value;
-	    };
-	};
-
-	module.exports.create = function(tag, properties, prototype, computedProperties) {
-	    prototype = prototype || { };
-	    computedProperties = computedProperties || { };
-
-	    var Component = function(instanceProperties) {
-	        instanceProperties = instanceProperties || {};
-
-	        _.each(computedProperties, function(computation, property) {
-	            Object.defineProperty(this, property, computation);
-	        }, this);
-
-	        _.each(properties, function(fallback, property) {
-	            this[property] = safeAccess(instanceProperties)(property, fallback)
-	        }, this);
-	    };
-
-	    Component.prototype = _.extend({
-	        tag: tag,
-	        toString: function() {
-	            return JSON.stringify(this, null, 4)
-	        }
-	    }, prototype);
-
-	    return Component;
-	};
+	    queue: loopEndlessly
+	}
 
 /***/ }
 /******/ ]);
