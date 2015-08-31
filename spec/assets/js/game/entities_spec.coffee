@@ -4,6 +4,6 @@ describe 'Entities Main', ->
   it 'exists', ->
     expect(subject).toBeTruthy()
 
-  describe '#entityManager', ->
+  describe '#create', ->
     it 'exists', ->
-      expect(subject.entityManager).toBeTruthy()
+      expect(subject.create).toBeTruthy()
