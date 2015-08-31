@@ -2535,7 +2535,6 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(1);
-	var MathHelper = __webpack_require__(13);
 
 	var safeAccess = function(hash) {
 	    return function(key, fallback) {
@@ -2569,6 +2568,7 @@
 
 	    return Component;
 	};
+
 
 /***/ },
 /* 19 */

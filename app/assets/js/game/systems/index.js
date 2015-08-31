@@ -1,4 +1,4 @@
-var SystemManager = require('./../../core/systems/manager');
+var SystemManager = require('core/systems/manager');
 var KeyboardSystem = require('./keyboard');
 var MovementSystem = require('./movement');
 var RenderSystem = require('./render');
