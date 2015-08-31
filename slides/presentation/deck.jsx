@@ -22,23 +22,22 @@ export default class extends React.Component {
     return (
       <Deck transition={["zoom", "slide"]} transitionDuration={800}>
         <Slide transition={["zoom"]} bgColor="primary">
-          <Heading size={1} fit caps textColor="black">
-            Spectacle
+          <Heading size={1} caps textColor="black">
+            ECS
           </Heading>
           <Heading size={1} fit caps margin="-20px 0px">
-            A ReactJS Presentation Library
+            Entity Component Systems
           </Heading>
-          <Heading size={2} fit caps textColor="black">
-            Where You Can Write Your Decks In JSX
+          <Heading size={5} textColor="black">
+            Alan Foster
           </Heading>
-          <Link href="https://github.com/FormidableLabs/spectacle">
-            <Text bold caps textColor="tertiary">View on Github</Text>
+          <Link href="http://www.github.com/alanfoster/JS-Game">
+            <Text bold textColor="tertiary">http://www.github.com/alanfoster/JS-Game </Text>
           </Link>
-          <Text textSize="1.5em" margin="20px 0px 0px" bold>Hit Your Right Arrow To Begin!</Text>
         </Slide>
-        <Slide transition={['slide']} bgColor="black" notes="You can even put notes on your slide. How awesome is that?">
+        <Slide transition={['slide']} bgColor="black">
           <Image src={images.kat.replace('/','')} margin="0px auto 40px" height="293px"/>
-          <Heading size={1} fit textColor="primary" textFont="secondary">
+          <Heading size={2} fit textColor="primary" textFont="secondary">
             Wait what?
           </Heading>
         </Slide>
