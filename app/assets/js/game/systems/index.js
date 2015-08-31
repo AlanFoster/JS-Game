@@ -7,7 +7,7 @@ var FrictionSystem = require('./friction');
 var BotSystem = require('./bot');
 var ShootableSystem = require('./shootable');
 
-var Components = require('./../components/index')
+var Components = require('./../components')
 var RandomEntityCreatorSystem = (function() {
     var System = function(entityManager) {
         this.entityManager = entityManager;

@@ -1,4 +1,4 @@
-var Components = require('core/components/index');
+var Components = require('core/components');
 var _ = require('underscore');
 var MathHelper = require('core/math');
 
