@@ -1,4 +1,4 @@
-var Components = require('core/components/index');
+var Components = require('core/components');
 
 module.exports = Components.create('shootable', {
     speed: 9,

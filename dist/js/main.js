@@ -167,7 +167,7 @@
 	var BotSystem = __webpack_require__(14);
 	var ShootableSystem = __webpack_require__(15);
 
-	var Components = __webpack_require__(16)
+	var Components = __webpack_require__(17)
 	var RandomEntityCreatorSystem = (function() {
 	    var System = function(entityManager) {
 	        this.entityManager = entityManager;
@@ -252,7 +252,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(5);
-	var Loader = __webpack_require__(17);
+	var Loader = __webpack_require__(16);
 
 	module.exports = new Loader();
 
@@ -1942,6 +1942,7 @@
 	        var maxSpeed = acceleration.maxSpeed;
 	        var rotation = acceleration.turningSpeed;
 
+
 	        if(keysDown.left) velocityUpdates.push({ x: 0, y: 0, rotation: -rotation });
 	        if(keysDown.right) velocityUpdates.push({ x: 0, y: 0, rotation: rotation });
 
@@ -2009,7 +2010,6 @@
 
 	                process(entity, { velocity: velocity, keyboard: keyboard, spatial: spatial, acceleration: acceleration })
 	            });
-
 	        },
 	        process: function(entity, components) {
 	            processMovement(entity, components, this.keysDown);
@@ -2021,6 +2021,7 @@
 	})();
 
 	module.exports = Keyboard;
+
 
 /***/ },
 /* 11 */
@@ -2379,7 +2380,7 @@
 /* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(16)
+	var Components = __webpack_require__(17)
 
 	var Shootable = (function() {
 	    var System = function() {
@@ -2443,31 +2444,9 @@
 
 	module.exports = Shootable;
 
+
 /***/ },
 /* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(5);
-
-	var allComponents = _.object(_.map([
-	    'Rendered',
-	    'Velocity',
-	    'Spatial',
-	    'Acceleration',
-	    'Keyboard',
-	    'Friction',
-	    'Health',
-	    'Camera',
-	    'Bot',
-	    'Shootable'
-	], function(tag) {
-	    return [tag, __webpack_require__(18)("./" + tag.toLowerCase())];
-	}));
-
-	module.exports = allComponents;
-
-/***/ },
-/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var _ = __webpack_require__(5);
@@ -2506,6 +2485,29 @@
 	})();
 
 /***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(5);
+
+	var allComponents = _.object(_.map([
+	    'Rendered',
+	    'Velocity',
+	    'Spatial',
+	    'Acceleration',
+	    'Keyboard',
+	    'Friction',
+	    'Health',
+	    'Camera',
+	    'Bot',
+	    'Shootable'
+	], function(tag) {
+	    return [tag, __webpack_require__(18)("./" + tag.toLowerCase())];
+	}));
+
+	module.exports = allComponents;
+
+/***/ },
 /* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -2520,8 +2522,8 @@
 		"./friction.js": 23,
 		"./health": 24,
 		"./health.js": 24,
-		"./index": 16,
-		"./index.js": 16,
+		"./index": 17,
+		"./index.js": 17,
 		"./keyboard": 25,
 		"./keyboard.js": 25,
 		"./rendered": 26,
@@ -2584,6 +2586,7 @@
 	    turningSpeed: Math.PI / 180
 	});
 
+
 /***/ },
 /* 21 */
 /***/ function(module, exports, __webpack_require__) {
@@ -2596,6 +2599,7 @@
 	    roamCount: 0
 	});
 
+
 /***/ },
 /* 22 */
 /***/ function(module, exports, __webpack_require__) {
@@ -2604,6 +2608,7 @@
 
 	module.exports = Components.create('camera', {
 	});
+
 
 /***/ },
 /* 23 */
@@ -2614,6 +2619,7 @@
 	module.exports = Components.create('friction', {
 	    resistance: 0.9
 	});
+
 
 /***/ },
 /* 24 */
@@ -2630,6 +2636,7 @@
 	    }
 	});
 
+
 /***/ },
 /* 25 */
 /***/ function(module, exports, __webpack_require__) {
@@ -2637,6 +2644,7 @@
 	var Components = __webpack_require__(30);
 
 	module.exports = Components.create('keyboard', {});
+
 
 /***/ },
 /* 26 */
@@ -2654,6 +2662,7 @@
 	        return JSON.stringify({ width: this.width, height: this.height}, null, 4);
 	    }
 	});
+
 
 /***/ },
 /* 27 */
@@ -2673,6 +2682,7 @@
 	    // the next logical update
 	    firing: false
 	});
+
 
 /***/ },
 /* 28 */
@@ -2707,6 +2717,7 @@
 	    }
 	});
 
+
 /***/ },
 /* 29 */
 /***/ function(module, exports, __webpack_require__) {
@@ -2717,6 +2728,7 @@
 	    x: 0,
 	    y: 0
 	});
+
 
 /***/ },
 /* 30 */

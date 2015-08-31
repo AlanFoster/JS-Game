@@ -1,4 +1,4 @@
-var Components = require('game/components/index')
+var Components = require('game/components')
 
 var Shootable = (function() {
     var System = function() {
