@@ -92,9 +92,14 @@
 	        this.context = undefined;
 	    };
 
+	    Renderer.noop = {
+	      clear: function() { },
+	      batch: function(drawingFunction) { }
+	    };
+
 	    Renderer.prototype = {
 	        setUp: function (world) {
-	            if (!this.target) return;
+	            if (!this.target) return Renderer.noop;
 
 	            this.size = world.size;
 
@@ -1754,8 +1759,7 @@
 	module.exports = {
 	    create: function() {
 	        return new EntityManager(Entity, new IdGenerator());
-	    },
-	    entityManager: 'foo'
+	    }
 	};
 
 
@@ -1843,7 +1847,7 @@
 	var ShootableSystem = __webpack_require__(14);
 
 	module.exports = {
-	    create: function(entityManager) {
+	    create: function() {
 	        var systemManager = new SystemManager([
 	            new KeyboardSystem(window).setUp(),
 	            new BotSystem(),
@@ -1887,6 +1891,7 @@
 	})();
 
 	module.exports = Manager;
+
 
 /***/ },
 /* 8 */

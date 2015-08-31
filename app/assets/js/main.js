@@ -46,9 +46,14 @@ var Renderer = (function () {
         this.context = undefined;
     };
 
+    Renderer.noop = {
+      clear: function() { },
+      batch: function(drawingFunction) { }
+    };
+
     Renderer.prototype = {
         setUp: function (world) {
-            if (!this.target) return;
+            if (!this.target) return Renderer.noop;
 
             this.size = world.size;
 

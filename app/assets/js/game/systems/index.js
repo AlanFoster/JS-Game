@@ -7,7 +7,7 @@ var BotSystem = require('./bot');
 var ShootableSystem = require('./shootable');
 
 module.exports = {
-    create: function(entityManager) {
+    create: function() {
         var systemManager = new SystemManager([
             new KeyboardSystem(window).setUp(),
             new BotSystem(),
