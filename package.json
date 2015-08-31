@@ -34,11 +34,11 @@
     "gulp-watch": "^4.1.0",
     "gulp-webpack": "^1.1.2",
     "jasmine": "^2.1.1",
-    "karma": "^0.12.31",
+    "karma": "^0.13.9",
     "karma-chrome-launcher": "^0.1.7",
     "karma-firefox-launcher": "^0.1.6",
     "karma-jasmine": "^0.3.5",
-    "karma-webpack": "^1.5.0",
+    "karma-webpack": "^1.7.0",
     "yargs": "^3.9.1"
   }
 }
