@@ -5,6 +5,8 @@ import {
   Heading, Image, Layout, Link, ListItem, List, Quote, Slide, Text
 } from "../src/spectacle";
 
+
+import GameSample from "./game-sample";
 import preloader from "../src/utils/preloader";
 
 import Interactive from "./interactive";
@@ -35,6 +37,10 @@ export default class extends React.Component {
             <Text bold textColor="tertiary">http://www.github.com/alanfoster/JS-Game </Text>
           </Link>
         </Slide>
+        <Slide>
+          <GameSample />
+        </Slide>
+
         <Slide transition={['slide']} bgColor="black">
           <Image src={images.kat.replace('/','')} margin="0px auto 40px" height="293px"/>
           <Heading size={2} fit textColor="primary" textFont="secondary">

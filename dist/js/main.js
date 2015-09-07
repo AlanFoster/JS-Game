@@ -44,95 +44,9 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(1);
+	var createWorldFor = __webpack_require__(1)
 
-	var getWorldSizeFor = function(target) {
-	  return {
-	    width: window.innerWidth - 30,
-	    height: window.innerHeight - 30
-	  };
-	};
-
-	var createWorldFor = function(target) {
-	    var entityManager = __webpack_require__(2).create();
-	    var systemManager = __webpack_require__(6).create(entityManager);
-	    var assetManager = __webpack_require__(28);
-	    var runner = __webpack_require__(30);
-
-	    systemManager.register(new RandomEntityCreatorSystem(entityManager));
-
-	    var world = {
-	        entityManager: entityManager,
-	        assetManager: assetManager,
-
-	        size: getWorldSizeFor(target)
-	    };
-
-	    world.renderer = new Renderer(target).setUp(world);
-
-	    assetManager.load([
-	        { src: 'images/player.gif', name: 'player' },
-	        { src: 'images/enemy.gif', name: 'enemy' },
-	        { src: 'images/bullet.png', name: 'bullet' }
-	    ], function () {
-	        runner.queue(function () {
-	            systemManager.update(world);
-	        })
-	    })
-	};
-
-	window.onload = function () {
-	    createWorldFor(document.getElementById('game'));
-	};
-
-	var Renderer = (function () {
-	    var Renderer = function (target) {
-	        this.target = target;
-
-	        this.context = undefined;
-	    };
-
-	    Renderer.noop = {
-	      clear: function() { },
-	      batch: function(drawingFunction) { }
-	    };
-
-	    Renderer.prototype = {
-	        setUp: function (world) {
-	            if (!this.target) return Renderer.noop;
-
-	            this.size = world.size;
-
-	            var canvas = document.createElement('canvas');
-	            canvas.width = this.size.width;
-	            canvas.height = this.size.height;
-
-	            this.context = canvas.getContext('2d');
-
-	            this.target.appendChild(canvas);
-
-	            return this;
-	        },
-	        clear: function () {
-	            var context = this.context;
-
-	            context.clearRect(0, 0, this.size.width, this.size.height);
-	            context.moveTo(0, 0);
-	        },
-	        batch: function(drawingFunction) {
-	            var context = this.context;
-
-	            context.save();
-	            drawingFunction(context);
-	            context.restore();
-	        }
-	    };
-
-	    return Renderer;
-	})();
-
-
-	var Components = __webpack_require__(15);
+	var Components = __webpack_require__(2);
 	var RandomEntityCreatorSystem = (function() {
 	  var System = function(entityManager) {
 	    this.entityManager = entityManager;
@@ -193,9 +107,132 @@
 	  return System;
 	})();
 
+	window.onload = function () {
+	  var world = createWorldFor(document.getElementById('game'));
+
+	  world.systemManager
+	       .register(new RandomEntityCreatorSystem(world.entityManager));
+	};
+
 
 /***/ },
 /* 1 */
+/***/ function(module, exports) {
+
+	//var _ = require('underscore');
+	//
+	//var getWorldSizeFor = function(target) {
+	//  return {
+	//    width: window.innerWidth - 30,
+	//    height: window.innerHeight - 30
+	//  };
+	//};
+	//
+	//var createWorldFor = function(target) {
+	//  var entityManager = require('game/entities').create();
+	//  var systemManager = require('game/systems').create(entityManager);
+	//  var assetManager = require('core/assets');
+	//  var runner = require('core/runner');
+	//
+	//  var world = {
+	//    entityManager: entityManager,
+	//    assetManager: assetManager,
+	//    systemManager: systemManager,
+	//
+	//    size: getWorldSizeFor(target)
+	//  };
+	//
+	//  world.renderer = new Renderer(target).setUp(world);
+	//
+	//  assetManager.load([
+	//    { src: 'images/player.gif', name: 'player' },
+	//    { src: 'images/enemy.gif', name: 'enemy' },
+	//    { src: 'images/bullet.png', name: 'bullet' }
+	//  ], function () {
+	//    runner.queue(function () {
+	//      systemManager.update(world);
+	//    })
+	//  });
+	//
+	//  return world;
+	//};
+	//
+	//var Renderer = (function () {
+	//  var Renderer = function (target) {
+	//    this.target = target;
+	//
+	//    this.context = undefined;
+	//  };
+	//
+	//  Renderer.noop = {
+	//    clear: function() { },
+	//    batch: function(drawingFunction) { }
+	//  };
+	//
+	//  Renderer.prototype = {
+	//    setUp: function (world) {
+	//      if (!this.target) return Renderer.noop;
+	//
+	//      this.size = world.size;
+	//
+	//      var canvas = document.createElement('canvas');
+	//      canvas.width = this.size.width;
+	//      canvas.height = this.size.height;
+	//
+	//      this.context = canvas.getContext('2d');
+	//
+	//      this.target.appendChild(canvas);
+	//
+	//      return this;
+	//    },
+	//    clear: function () {
+	//      var context = this.context;
+	//
+	//      context.clearRect(0, 0, this.size.width, this.size.height);
+	//      context.moveTo(0, 0);
+	//    },
+	//    batch: function(drawingFunction) {
+	//      var context = this.context;
+	//
+	//      context.save();
+	//      drawingFunction(context);
+	//      context.restore();
+	//    }
+	//  };
+	//
+	//  return Renderer;
+	//})();
+
+	module.exports = function() {
+	  alert('hello world');
+	}
+
+
+/***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(3);
+
+	var allComponents = _.object(_.map([
+	    'Rendered',
+	    'Velocity',
+	    'Spatial',
+	    'Acceleration',
+	    'Keyboard',
+	    'Friction',
+	    'Health',
+	    'Camera',
+	    'Bot',
+	    'Shootable'
+	], function(tag) {
+	    return [tag, __webpack_require__(4)("./" + tag.toLowerCase())];
+	}));
+
+	module.exports = allComponents;
+
+/***/ },
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.8.3
@@ -1749,759 +1786,32 @@
 
 
 /***/ },
-/* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Entity = __webpack_require__(3);
-	var EntityManager = __webpack_require__(4);
-	var IdGenerator = __webpack_require__(5);
-
-	module.exports = {
-	    create: function() {
-	        return new EntityManager(Entity, new IdGenerator());
-	    }
-	};
-
-
-/***/ },
-/* 3 */
-/***/ function(module, exports) {
-
-	var Entity = (function() {
-	    var Entity = function(id) {
-	        this.id = id;
-	        this.components = {};
-	    };
-
-	    Entity.prototype = {
-	        addComponent: function(component) {
-	            this.components[component.tag] = component;
-	            return this;
-	        },
-	        getComponent: function(tag) {
-	            return this.components[tag];
-	        },
-	        removeComponent: function(tag) {
-	            delete this.components[tag];
-	        },
-	        toString: function() {
-	            return JSON.stringify(this, null, 4)
-	        }
-	    };
-
-	    return Entity;
-	})();
-
-	module.exports = Entity;
-
-
-/***/ },
 /* 4 */
-/***/ function(module, exports) {
-
-	var EntityManager = (function () {
-	    var EntityManager = function (Entity, idGenerator) {
-	        this.Entity = Entity;
-	        this.idGenerator = idGenerator;
-	        this.entities = []
-	    };
-
-	    EntityManager.prototype = {
-	        createEntity: function(){
-	            var entity = new this.Entity(this.idGenerator.next())
-	            this.entities.push(entity);
-	            return entity;
-	        }
-	    };
-
-	    return EntityManager;
-	})();
-
-	module.exports = EntityManager;
-
-/***/ },
-/* 5 */
-/***/ function(module, exports) {
-
-	var SequentialIdGenerator = function() {
-	    var count = 0;
-	    return {
-	        next: function() {
-	            return ++count;
-	        }
-	    };
-	};
-
-	module.exports = SequentialIdGenerator;
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var SystemManager = __webpack_require__(7);
-	var KeyboardSystem = __webpack_require__(8);
-	var MovementSystem = __webpack_require__(9);
-	var RenderSystem = __webpack_require__(10);
-	var FrictionSystem = __webpack_require__(11);
-	var BotSystem = __webpack_require__(12);
-	var ShootableSystem = __webpack_require__(14);
-
-	module.exports = {
-	    create: function() {
-	        var systemManager = new SystemManager([
-	            new KeyboardSystem(window).setUp(),
-	            new BotSystem(),
-	            new FrictionSystem(),
-	            new MovementSystem(),
-	            new ShootableSystem(),
-	            new RenderSystem()
-	        ]);
-
-	        return systemManager;
-	    }
-	};
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(1);
-
-	var Manager = (function() {
-	    var Manager = function(systems) {
-	        this.systems = systems || []
-	    };
-
-	    Manager.prototype = {
-	        register: function(systems) {
-	            systems = _.isArray(systems) ? systems : [systems];
-	            this.systems = this.systems.concat(systems)
-	        },
-	        update: function(world) {
-	            world.renderer.clear();
-
-	            _.each(this.systems, function(system) {
-	                system.update(world.entityManager.entities, world);
-	            });
-	        }
-	    };
-
-	    return Manager;
-	})();
-
-	module.exports = Manager;
-
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(1);
-
-	var Keyboard = (function() {
-	    var System = function(window) {
-	        this.window = window;
-	        this.keysDown = { };
-	    };
-
-	    var clamp = function(value) {
-	        return function(between) {
-	            if (value > between.to) { return between.to }
-	            if (value < between.from) { return between.from }
-	            return value;
-	        }
-	    };
-
-	    var processMovement = function(entity, components, keysDown) {
-	        var velocity = components.velocity;
-	        var spatial = components.spatial;
-	        var acceleration = components.acceleration;
-
-	        var velocityUpdates = [];
-
-	        var power = acceleration.power;
-	        var maxSpeed = acceleration.maxSpeed;
-	        var rotation = acceleration.turningSpeed;
-
-
-	        if(keysDown.left) velocityUpdates.push({ x: 0, y: 0, rotation: -rotation });
-	        if(keysDown.right) velocityUpdates.push({ x: 0, y: 0, rotation: rotation });
-
-	        if(keysDown.up) velocityUpdates.push({ x: power, y: power, rotation: 0 });
-	        if(keysDown.down) velocityUpdates.push({ x: -power, y: -power, rotation: 0 });
-
-	        _.each(velocityUpdates, function(update) {
-	            velocity.x = clamp(velocity.x + update.x)({ from : -maxSpeed, to: maxSpeed });
-	            velocity.y = clamp(velocity.y + update.y)({ from : -maxSpeed, to: maxSpeed });
-
-	            spatial.rotation += update.rotation
-	        });
-	    };
-
-	    var changeCamera = function(entities) {
-	        var entityWithCamera = _.find(entities, function(entity) { return entity.getComponent('camera'); });
-	        console.log(entityWithCamera.id)
-	        var camera = entityWithCamera.getComponent('camera');
-	        entityWithCamera.removeComponent('camera');
-	        entities[_.random(0, entities.length - 1)].addComponent(camera);
-	    };
-
-	    var processShooting = function(entity, components, keysDown) {
-	        var shootable = entity.getComponent('shootable');
-	        if(!shootable) return;
-
-	        if(keysDown.space) {
-	            shootable.firing = true;
-	        }
-	    };
-
-	    var keyMappings = {
-	        37: 'left',
-	        38: 'up',
-	        39: 'right',
-	        40: 'down',
-	        32: 'space',
-	        13: 'enter'
-	    };
-
-	    System.prototype = {
-	        setUp: function() {
-	            this.window.onkeydown = this.window.onkeyup = this.handleKey.bind(this);
-	            return this;
-	        },
-	        handleKey: function(event) {
-	            var keyCode = event.keyCode || event.which;
-	            var key = keyMappings[keyCode];
-	            if (!key) return;
-
-	            this.keysDown[key] = event.type == 'keydown';
-	        },
-	        update: function(entities) {
-	            if(this.keysDown.enter) {
-	                changeCamera(entities);
-	            }
-
-	            var process = this.process.bind(this);
-	            entities.forEach(function(entity) {
-	                var velocity = entity.getComponent('velocity');
-	                var spatial = entity.getComponent('spatial');
-	                var keyboard = entity.getComponent('keyboard');
-	                var acceleration = entity.getComponent('acceleration');
-	                if (!velocity || !keyboard || !acceleration) return;
-
-	                process(entity, { velocity: velocity, keyboard: keyboard, spatial: spatial, acceleration: acceleration })
-	            });
-	        },
-	        process: function(entity, components) {
-	            processMovement(entity, components, this.keysDown);
-	            processShooting(entity, components, this.keysDown);
-	        }
-	    };
-
-	    return System;
-	})();
-
-	module.exports = Keyboard;
-
-
-/***/ },
-/* 9 */
-/***/ function(module, exports) {
-
-	var Movement = (function() {
-	    var System = function() {
-
-	    };
-
-	    System.prototype = {
-	        update: function(entities) {
-	            var process = this.process;
-	            entities.forEach(function(entity) {
-	                var spatial = entity.getComponent('spatial');
-	                var velocity = entity.getComponent('velocity');
-	                if (!spatial || !velocity) return;
-
-	                process(entity, { spatial: spatial, velocity: velocity })
-	            })
-	        },
-	        process: function(entity, components) {
-	            var spatial = components.spatial;
-	            var velocity = components.velocity;
-
-	            spatial.x += velocity.x * Math.cos(spatial.rotation);
-	            spatial.y += velocity.y * Math.sin(spatial.rotation);
-	        }
-	    };
-
-	    return System;
-	})();
-
-	module.exports = Movement;
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(1);
-
-	var Render = (function () {
-	    var System = function () {
-	    };
-
-	    var botDebugRenderer = (function() {
-	        return {
-	            draw: function (entity, spatial, context) {
-	                var botComponent = entity.getComponent('bot');
-	                if (botComponent && botComponent.target) {
-	                    var x = botComponent.target.x;
-	                    var y = botComponent.target.y;
-
-	                    context.fillStyle = 'blue';
-	                    context.fillRect(x, y, 5, 5);
-	                }
-	            }
-	        };
-	    })();
-
-	    var componentDebugRenderer = (function() {
-	        return {
-	            draw: function(entity, context, size) {
-	                if (!entity.getComponent('camera')) return;
-
-	                var capitalizeFirst = function(string) { return string[0].toUpperCase() + string.substr(1) }
-	                var componentDebug = _.flatten(_.map(entity.components, function(component) {
-	                    var debugged = _.drop(component.toString().split('\n'));
-
-	                    var tag = capitalizeFirst(component.tag);
-	                    var splitter = debugged.length === 0 ? '{ }' : '{';
-	                    return [tag + ': ' + splitter].concat(debugged);
-	                }));
-
-	                var lines = ['Components for entity #' + entity.id + ' - '].concat(componentDebug);
-
-	                context.fillStyle = 'black';
-	                context.font = '15px serif';
-
-	                _.each(lines, function(line, index) {
-	                    context.fillText(line, 15, 15 * (index + 1));
-	                });
-	            }
-	        }
-	    })();
-
-	    var healthBarRenderer = (function() {
-	        var calculateHealthBar = function(health, spatial) {
-	            var healthBarTotalWidth = 180;
-	            return {
-	                totalWidth: healthBarTotalWidth,
-	                height: 18,
-	                greenBarWidth: health.percentage() * healthBarTotalWidth,
-
-	                drawAt: {
-	                    x: spatial.center.x - healthBarTotalWidth / 2,
-	                    y: spatial.y - 45
-	                }
-	            };
-	        };
-
-	        var colors = {
-	            background: 'red',
-	            foreground: '#6CDE68',
-	            border: '#135E2F'
-	        };
-
-	        return {
-	            draw: function(entity, spatial, context) {
-	                var health = entity.getComponent('health');
-	                if (!health) return;
-
-	                var healthBar = calculateHealthBar(health, spatial);
-
-	                context.fillStyle = colors.background;
-	                context.fillRect(healthBar.drawAt.x, healthBar.drawAt.y, healthBar.totalWidth, healthBar.height);
-
-	                context.fillStyle = colors.foreground;
-	                context.fillRect(healthBar.drawAt.x, healthBar.drawAt.y, healthBar.greenBarWidth, healthBar.height);
-
-	                context.strokeStyle = colors.border;
-	                context.lineWidth = 2;
-	                context.beginPath();
-	                context.rect(healthBar.drawAt.x, healthBar.drawAt.y, healthBar.totalWidth, healthBar.height);
-	                context.stroke()
-	            }
-	        }
-	    })();
-
-	    System.prototype = {
-	        setUp: function () {
-
-	        },
-	        getCamera: function(entities) {
-	            var entityWithCamera = _.find(entities, function(entity) {
-	                return entity.getComponent('camera')
-	            });
-
-	            if (!entityWithCamera) return { x: 0, y: 0 };
-
-	            var spatial = entityWithCamera.getComponent('spatial');
-	            var rendered = entityWithCamera.getComponent('rendered');
-	            var camera = spatial.center;
-
-	            return camera;
-	        },
-	        update: function (entities, world) {
-	            var renderer = world.renderer;
-	            if (!renderer) return; // TODO
-
-	            var camera = this.getCamera(entities);
-
-	            var process = this.process.bind(this);
-	            entities.forEach(function (entity) {
-	                var rendered = entity.getComponent('rendered');
-	                var spatial = entity.getComponent('spatial');
-	                if (!rendered || !spatial) return;
-
-	                process(entity, {rendered: rendered, spatial: spatial}, camera, renderer, world)
-	            })
-	        },
-	        process: function (entity, components, camera, renderer, world) {
-	            var rendered = components.rendered;
-	            var spatial = components.spatial;
-
-	            renderer.batch(function(context) {
-	                botDebugRenderer.draw(entity, spatial, context);
-	                healthBarRenderer.draw(entity, spatial, context);
-	                componentDebugRenderer.draw(entity, context);
-
-	                var center = spatial.center;
-
-	                var drawAt = {
-	                    x: -(spatial.width / 2),
-	                    y: -(spatial.height / 2)
-	                };
-
-	                context.translate(center.x, center.y);
-
-	                context.rotate(spatial.rotation);
-
-	                if(rendered.color) {
-	                    context.fillStyle = rendered.color;
-	                    context.fillRect(drawAt.x, drawAt.y, rendered.width, rendered.height);
-	                } else if(rendered.graphic) {
-	                    context.drawImage(rendered.graphic, drawAt.x, drawAt.y);
-	                }
-	            });
-
-	        }
-	    };
-
-	    return System;
-	})();
-
-	module.exports = Render;
-
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(1);
-
-	var Friction = (function() {
-	    var System = function(window) {
-	        this.window = window;
-	        this.keysDown = { };
-	    };
-
-	    System.prototype = {
-	        setUp: function() {
-
-	        },
-	        update: function(entities) {
-	            var process = this.process.bind(this);
-	            entities.forEach(function(entity) {
-	                var velocity = entity.getComponent('velocity');
-	                var friction = entity.getComponent('friction');
-	                if (!velocity || !friction) return;
-
-	                process(entity, { velocity: velocity, friction: friction })
-	            });
-
-	            this.keysDown = {};
-	        },
-	        process: function(entity, components) {
-	            var velocity = components.velocity;
-	            var friction = components.friction;
-
-	            velocity.x *= friction.resistance;
-	            velocity.y *= friction.resistance;
-
-	            if(Math.abs(velocity.x) < 0.001) { velocity.x = 0; }
-	            if(Math.abs(velocity.y) < 0.001) { velocity.y = 0; }
-	        }
-	    };
-
-	    return System;
-	})();
-
-	module.exports = Friction;
-
-/***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var MathHelpers = __webpack_require__(13);
-
-	var Movement = (function () {
-	    var System = function () {
-
-	    };
-
-	    var randomBotState = function () {
-	        var states = [
-	            //'neutral',
-	            'roam'
-	        ];
-
-	        return states[~~(Math.random() * states.length)];
-	    };
-
-	    var changeState = function (bot) {
-	        bot.state = randomBotState()
-	    };
-
-	    var rotateTowards = function (from, to) {
-	        var angle = MathHelpers.normalizeRadians(MathHelpers.angleBetween(to, from.center));
-	        var angleDifference = angle - from.rotation;
-
-	        var sensitivity = Math.PI / 120;
-
-	        var newRotation = Math.abs(angleDifference) >= sensitivity ? angle : from.rotation;
-
-	        return newRotation;
-	    };
-
-	    var rotateTowardsSmoothly = function(from, to) {
-	        var newRotation = rotateTowards(from, to);
-	        var oldRotation = from.rotation;
-
-	        var maximumTurningDistance = Math.PI / 120;
-	        var turnLeft = oldRotation > newRotation + Math.PI || oldRotation < newRotation;
-	        var smoothRotation = turnLeft ? maximumTurningDistance : -maximumTurningDistance;
-
-	        return oldRotation + smoothRotation;
-	    };
-
-	    System.prototype = {
-	        update: function (entities, world) {
-	            var process = this.process;
-	            entities.forEach(function (entity) {
-	                var spatial = entity.getComponent('spatial');
-	                var velocity = entity.getComponent('velocity');
-	                var bot = entity.getComponent('bot');
-
-	                if (!spatial || !velocity || !bot) return;
-
-	                process(entity, {spatial: spatial, velocity: velocity, bot: bot}, world)
-	            })
-	        },
-	        process: function (entity, components, world) {
-	            var spatial = components.spatial;
-	            var velocity = components.velocity;
-	            var bot = components.bot;
-
-	            switch (bot.state) {
-	                case 'neutral':
-	                    velocity.x = 0;
-	                    velocity.y = 0;
-	                    bot.state = 'roam';
-
-	                    break;
-
-	                case 'roam':
-	                    bot.target = {
-	                        x: ~~(Math.random() * world.size.width),
-	                        y: ~~(Math.random() * world.size.height)
-	                    };
-
-	                    bot.state = 'roaming';
-	                    break;
-
-	                case 'roaming':
-	                    spatial.rotation = rotateTowardsSmoothly(spatial, bot.target);
-	                    entity.getComponent('shootable').firing = true;
-	                    velocity.x = 1.8;
-	                    velocity.y = 1.8;
-
-	                    spatial.x += velocity.x * Math.cos(spatial.rotation);
-	                    spatial.y += velocity.y * Math.sin(spatial.rotation);
-
-	                    var distanceFromTarget = MathHelpers.distanceBetween(spatial.center, bot.target);
-	                    if(distanceFromTarget < ((spatial.height + spatial.width) / 2)) {
-	                        changeState(bot);
-	                    }
-
-	                    bot.roamCount = (bot.roamCount + 1) % 2000;
-	                    if (bot.roamCount == 0) {
-	                        changeState(bot);
-	                    }
-
-	                    break;
-	            }
-
-	        }
-	    };
-
-	    return System;
-	})();
-
-	module.exports = Movement;
-
-/***/ },
-/* 13 */
-/***/ function(module, exports) {
-
-	module.exports = {
-	    twoPI: Math.PI * 2,
-	    angleBetween: function(from, to) {
-	        var x = from.x - to.x;
-	        var y = from.y - to.y;
-	        return Math.atan2(y, x);
-	    },
-	    normalizeRadians: function(value) {
-	        var twoPI = this.twoPI;
-	        var normalizedRadian = value - Math.floor(value / twoPI) * twoPI;
-
-	        return normalizedRadian;
-	    },
-	    distanceBetween: function(from, to) {
-	        var xSquared = Math.pow(from.x - to.x, 2);
-	        var ySquared = Math.pow(from.y - to.y, 2);
-
-	        return Math.sqrt(xSquared + ySquared);
-	    }
-	};
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Components = __webpack_require__(15)
-
-	var Shootable = (function() {
-	    var System = function() {
-
-	    };
-
-	    var createBullet = function(world, parent, components) {
-	        var spatial = components.spatial;
-	        var shootable = components.shootable;
-
-	        return world.entityManager.createEntity()
-	                            .addComponent(new Components.Rendered({
-	                                width: 66,
-	                                height: 66,
-	                                graphic: world.assetManager.assets.bullet
-	                            }))
-	                            .addComponent(new Components.Velocity({ x: shootable.speed, y: shootable.speed }))
-	                            .addComponent(new Components.Spatial({
-	                                x: spatial.x,
-	                                y: spatial.y,
-	                                width: 66,
-	                                height: 66,
-	                                rotation: spatial.rotation
-	                            }))
-	    };
-
-	    var allowedToShoot = function(shootable) {
-	        if (!(shootable && shootable.firing)) return false;
-
-	        return shootable.currentWaitPeriod == 0;
-	    };
-
-	    System.prototype = {
-	        update: function(entities, world) {
-	            var process = this.process;
-	            entities.forEach(function(entity) {
-	                var spatial = entity.getComponent('spatial');
-	                var shootable = entity.getComponent('shootable');
-	                if (!spatial || !shootable) return;
-
-	                process(entity, { spatial: spatial, shootable: shootable }, world)
-	            })
-	        },
-	        process: function(entity, components, world) {
-	            var shootable = components.shootable;
-	            if(shootable.currentWaitPeriod) {
-	                shootable.currentWaitPeriod--;
-	            }
-
-	            shootable.firing = allowedToShoot(shootable);
-	            if(!shootable.firing) return;
-
-	            createBullet(world, entity, components);
-	            shootable.firing = false;
-	            shootable.currentWaitPeriod = shootable.waitPeriod;
-	        }
-	    };
-
-	    return System;
-	})();
-
-	module.exports = Shootable;
-
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(1);
-
-	var allComponents = _.object(_.map([
-	    'Rendered',
-	    'Velocity',
-	    'Spatial',
-	    'Acceleration',
-	    'Keyboard',
-	    'Friction',
-	    'Health',
-	    'Camera',
-	    'Bot',
-	    'Shootable'
-	], function(tag) {
-	    return [tag, __webpack_require__(16)("./" + tag.toLowerCase())];
-	}));
-
-	module.exports = allComponents;
-
-/***/ },
-/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./acceleration": 17,
-		"./acceleration.js": 17,
-		"./bot": 19,
-		"./bot.js": 19,
-		"./camera": 20,
-		"./camera.js": 20,
-		"./friction": 21,
-		"./friction.js": 21,
-		"./health": 22,
-		"./health.js": 22,
-		"./index": 15,
-		"./index.js": 15,
-		"./keyboard": 23,
-		"./keyboard.js": 23,
-		"./rendered": 24,
-		"./rendered.js": 24,
-		"./shootable": 25,
-		"./shootable.js": 25,
-		"./spatial": 26,
-		"./spatial.js": 26,
-		"./velocity": 27,
-		"./velocity.js": 27
+		"./acceleration": 5,
+		"./acceleration.js": 5,
+		"./bot": 8,
+		"./bot.js": 8,
+		"./camera": 9,
+		"./camera.js": 9,
+		"./friction": 10,
+		"./friction.js": 10,
+		"./health": 11,
+		"./health.js": 11,
+		"./index": 2,
+		"./index.js": 2,
+		"./keyboard": 12,
+		"./keyboard.js": 12,
+		"./rendered": 13,
+		"./rendered.js": 13,
+		"./shootable": 14,
+		"./shootable.js": 14,
+		"./spatial": 15,
+		"./spatial.js": 15,
+		"./velocity": 16,
+		"./velocity.js": 16
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -2514,14 +1824,14 @@
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 16;
+	webpackContext.id = 4;
 
 
 /***/ },
-/* 17 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(6);
 
 	module.exports = Components.create('acceleration', {
 	    power: 0.2,
@@ -2531,11 +1841,11 @@
 
 
 /***/ },
-/* 18 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(1);
-	var MathHelper = __webpack_require__(13);
+	var _ = __webpack_require__(3);
+	var MathHelper = __webpack_require__(7);
 
 	var safeAccess = function(hash) {
 	    return function(key, fallback) {
@@ -2571,10 +1881,35 @@
 	};
 
 /***/ },
-/* 19 */
+/* 7 */
+/***/ function(module, exports) {
+
+	module.exports = {
+	    twoPI: Math.PI * 2,
+	    angleBetween: function(from, to) {
+	        var x = from.x - to.x;
+	        var y = from.y - to.y;
+	        return Math.atan2(y, x);
+	    },
+	    normalizeRadians: function(value) {
+	        var twoPI = this.twoPI;
+	        var normalizedRadian = value - Math.floor(value / twoPI) * twoPI;
+
+	        return normalizedRadian;
+	    },
+	    distanceBetween: function(from, to) {
+	        var xSquared = Math.pow(from.x - to.x, 2);
+	        var ySquared = Math.pow(from.y - to.y, 2);
+
+	        return Math.sqrt(xSquared + ySquared);
+	    }
+	};
+
+/***/ },
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(6);
 
 	module.exports = Components.create('bot', {
 	    state: 'roam',
@@ -2584,20 +1919,20 @@
 
 
 /***/ },
-/* 20 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(6);
 
 	module.exports = Components.create('camera', {
 	});
 
 
 /***/ },
-/* 21 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(6);
 
 	module.exports = Components.create('friction', {
 	    resistance: 0.9
@@ -2605,10 +1940,10 @@
 
 
 /***/ },
-/* 22 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(6);
 
 	module.exports = Components.create('health', {
 	    current: 50,
@@ -2621,19 +1956,19 @@
 
 
 /***/ },
-/* 23 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(6);
 
 	module.exports = Components.create('keyboard', {});
 
 
 /***/ },
-/* 24 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(6);
 
 	module.exports = Components.create('rendered', {
 	    width: 100,
@@ -2648,10 +1983,10 @@
 
 
 /***/ },
-/* 25 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(6);
 
 	module.exports = Components.create('shootable', {
 	    speed: 9,
@@ -2668,12 +2003,12 @@
 
 
 /***/ },
-/* 26 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
-	var _ = __webpack_require__(1);
-	var MathHelper = __webpack_require__(13);
+	var Components = __webpack_require__(6);
+	var _ = __webpack_require__(3);
+	var MathHelper = __webpack_require__(7);
 
 	module.exports = Components.create('spatial', {
 	    x: 0,
@@ -2702,88 +2037,16 @@
 
 
 /***/ },
-/* 27 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Components = __webpack_require__(18);
+	var Components = __webpack_require__(6);
 
 	module.exports = Components.create('velocity', {
 	    x: 0,
 	    y: 0
 	});
 
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(1);
-	var Loader = __webpack_require__(29);
-
-	module.exports = new Loader();
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var _ = __webpack_require__(1);
-
-	module.exports = (function () {
-	    function Loader() {
-	        this.assets = {};
-	    };
-
-	    Loader.prototype = {
-	        load: function (requiredAssets, callback) {
-	            var totalRequired = requiredAssets.length;
-	            var totalLoaded = 0;
-	            if(totalRequired === 0) callback();
-
-	            var assets = this.assets;
-
-	            _.each(requiredAssets, function(requiredAsset) {
-	                var name = requiredAsset.name;
-	                var src = requiredAsset.src;
-
-	                var image = new Image();
-	                image.onload = function() {
-	                    assets[name] = image;
-	                    totalLoaded++;
-	                    if(totalLoaded === totalRequired) {
-	                        callback();
-	                    }
-	                };
-	                image.src = src;
-	            });
-	        }
-	    };
-
-	    return Loader;
-	})();
-
-/***/ },
-/* 30 */
-/***/ function(module, exports) {
-
-	var runLater = (function() {
-	    var fallback = function(callback) {
-	        var targetFPS = 60;
-	        return window.setTimeout(callback, 1000 / targetFPS);
-	    };
-
-	    return window.requestAnimationFrame || fallback;
-	})();
-
-	var loopEndlessly = function(callback) {
-	    runLater(function() {
-	        loopEndlessly(callback);
-	    });
-	    callback();
-	};
-
-	module.exports = {
-	    queue: loopEndlessly
-	}
 
 /***/ }
 /******/ ]);
