@@ -1,4 +1,6 @@
 window.onload = function() {
-    window.document.body.innerHTML = '#{ERROR}';
-    console.error('#{ERROR}')
+    var error = 'Error: #{ERROR}';
+
+    window.document.body.innerHTML = error;
+    console.error(error)
 };

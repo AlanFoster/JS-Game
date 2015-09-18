@@ -15,17 +15,34 @@ var handleError = function(error) {
                             .replace(/'|"/g, "\\\'")
                             .replace(/\n|\r/g, "<br />");
 
-     gulp.src('app/assets/js/error.js')
-                .pipe(replace("#{ERROR}", errorContent))
-                .pipe(rename('main.js'))
-                .pipe(gulp.dest('dist/js'));
+    console.log('Error: ', errorContent);
+
+    gulp.src('app/assets/js/error.js')
+        .pipe(replace("#{ERROR}", errorContent))
+        .pipe(rename('main.js'))
+        .pipe(gulp.dest('dist/js'));
 };
 
-gulp.task('javascript_bundle', function () {
-    return gulp.src('app/assets/js/main.js')
-                .pipe(plumber({ errorHandler: handleError }))
-                .pipe(webpack(configuration.webpack))
-                .pipe(gulp.dest('dist/js'));
+
+var javascriptBundleFor = function(path, target) {
+  return gulp.src(path)
+             .pipe(plumber({ errorHandler: handleError }))
+             .pipe(webpack(configuration.webpack))
+             .pipe(gulp.dest(target));
+};
+
+var ecs_bundle = function(cb) {
+  return javascriptBundleFor('ecs/index.js', 'ecs-dist')
+};
+
+var app_bundle = function(cb) {
+  return javascriptBundleFor('app/assets/js/index.js', 'dist/js');
+};
+
+// These must be sequentially ran
+gulp.task('javascript_bundle', function(){
+  ecs_bundle();
+  app_bundle();
 });
 
 gulp.task('haml', function () {
@@ -40,7 +57,7 @@ gulp.task('images', function() {
 });
 
 gulp.task('clean', function() {
-    return gulp.src('dist/**', { read: false })
+    return gulp.src(['dist/**', 'ecs-dist/**'], { read: false })
                 .pipe(clean({ force: true }));
 });
 
@@ -59,7 +76,7 @@ gulp.task('views', ['haml']);
 gulp.task('build', ['assets', 'views']);
 gulp.task('rebuild', ['build']);
 gulp.task('watch', ['rebuild'], function () {
-    return watch('app/**/*.*', function() {
+    return watch(['app/**/*.*', 'ecs/**/*.*'], function() {
         gulp.start('rebuild');
     });
 });

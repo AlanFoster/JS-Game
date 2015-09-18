@@ -16,4 +16,4 @@ var loopEndlessly = function(callback) {
 
 module.exports = {
     queue: loopEndlessly
-}
+};

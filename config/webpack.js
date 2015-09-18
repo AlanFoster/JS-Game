@@ -1,8 +1,5 @@
 module.exports = {
     "bail": true,
-    "output": {
-        "filename": "main.js"
-    },
     module: {
         loaders: [
             { test: /\.coffee$/, loader: "coffee-loader" }
@@ -15,6 +12,7 @@ module.exports = {
             ".coffee"
         ],
         "modulesDirectories": [
+            ".",
             "app/assets/third_party",
             "app/assets/js",
             "node_modules"
