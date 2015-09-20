@@ -1,14 +1,16 @@
+'use strict';
+
 var _ = require('underscore');
 var Renderer = require('./renderer');
 
-var getWorldSizeFor = function(target) {
+var getWorldSizeFor = function getWorldSizeFor(target) {
   return {
     width: window.innerWidth - 30,
     height: window.innerHeight - 30
   };
 };
 
-var createWorldFor = function(ecs, target) {
+var createWorldFor = function createWorldFor(ecs, target) {
   var entityManager = require('game/entities').create();
   var systemManager = require('game/systems').create(entityManager);
   var assetManager = ecs.Assets;
@@ -24,14 +26,10 @@ var createWorldFor = function(ecs, target) {
 
   world.renderer = new Renderer(target).setUp(world);
 
-  assetManager.load([
-    { src: 'images/player.gif', name: 'player' },
-    { src: 'images/enemy.gif', name: 'enemy' },
-    { src: 'images/bullet.png', name: 'bullet' }
-  ], function () {
+  assetManager.load([{ src: 'images/player.gif', name: 'player' }, { src: 'images/enemy.gif', name: 'enemy' }, { src: 'images/bullet.png', name: 'bullet' }], function () {
     runner.queue(function () {
       systemManager.update(world);
-    })
+    });
   });
 
   return world;

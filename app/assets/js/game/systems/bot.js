@@ -1,4 +1,4 @@
-var MathHelpers = require('core/math');
+var MathHelpers = require('ecs-dist').Math;
 
 var Movement = (function () {
     var System = function () {

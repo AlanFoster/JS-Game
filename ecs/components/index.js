@@ -1,5 +1,5 @@
 var _ = require('underscore');
-var MathHelper = require('core/math');
+var MathHelper = require('./../math');
 
 var safeAccess = function(hash) {
     return function(key, fallback) {

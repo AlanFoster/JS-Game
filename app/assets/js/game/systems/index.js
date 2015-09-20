@@ -1,4 +1,4 @@
-var SystemManager = require('./../../../.././systems/manager');
+var SystemManager = require('ecs-dist').Systems.Manager;
 var KeyboardSystem = require('./keyboard');
 var MovementSystem = require('./movement');
 var RenderSystem = require('./render');

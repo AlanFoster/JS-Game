@@ -1,5 +1,8 @@
 module.exports = {
-    "bail": true,
+    bail: true,
+    output: {
+        filename: 'index.js'
+    },
     module: {
         loaders: [
             { test: /\.coffee$/, loader: "coffee-loader" }

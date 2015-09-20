@@ -1,4 +1,4 @@
-var Components = require('core/components');
+var Components = require('ecs-dist').Components;
 
 module.exports = Components.create('velocity', {
     x: 0,

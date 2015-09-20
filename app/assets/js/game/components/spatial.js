@@ -1,6 +1,7 @@
-var Components = require('core/components');
+var ecs = require('ecs-dist');
+var Components = ecs.Components;
+var MathHelper = ecs.Math;
 var _ = require('underscore');
-var MathHelper = require('core/math');
 
 module.exports = Components.create('spatial', {
     x: 0,

@@ -1,6 +1,7 @@
-var Entity = require('core/entities/entity');
-var EntityManager = require('core/entities/entity_manager');
-var IdGenerator = require('core/generators/idGenerator');
+var ecs = require('ecs-dist');
+var Entity = ecs.Entities.Entity;
+var EntityManager = ecs.Entities.EntityManager;
+var IdGenerator = ecs.Generators.id;
 
 module.exports = {
     create: function() {

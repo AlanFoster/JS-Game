@@ -1,10 +1,23 @@
-module.exports = {
-  //createWorldFor: require('./dom/create-world-for'),
-  //runner: require('./dom/runner'),
-  //Assets: require('./assets'),
-  //Components: require('./components'),
-  //Entities: require('./entities'),
-  //Generators: require('./generators'),
-  Math: require('./math'),
-  //Systems: require('./systems')
+var createWorldFor = require('./dom/create-world-for');
+var runner = require('./dom/runner');
+var Assets = require('./assets');
+var Components = require('./components');
+var Entities = require('./entities');
+var Generators = require('./generators');
+var Math = require('./math');
+var Systems = require('./systems');
+
+var ecs = {
+  createWorldFor: function (target) {
+    return createWorldFor(ecs, target)
+  },
+  runner,
+  Assets,
+  Components,
+  Entities,
+  Generators,
+  Math,
+  Systems
 };
+
+module.exports = ecs;

@@ -9,6 +9,7 @@ var watch = require('gulp-watch');
 var clean = require('gulp-clean');
 var plumber = require('gulp-plumber');
 var argv = require('yargs').argv;
+var babel = require('gulp-babel');
 
 var handleError = function(error) {
     var errorContent = error.message
@@ -19,30 +20,27 @@ var handleError = function(error) {
 
     gulp.src('app/assets/js/error.js')
         .pipe(replace("#{ERROR}", errorContent))
-        .pipe(rename('main.js'))
+        .pipe(rename('index.js'))
         .pipe(gulp.dest('dist/js'));
 };
 
+gulp.task('ecs_bundle', function() {
+  return gulp.src('ecs/**/*.js')
+             .pipe(babel())
+             .pipe(gulp.dest('ecs-dist'));
+});
 
-var javascriptBundleFor = function(path, target) {
-  return gulp.src(path)
+gulp.task('app_bundle', function() {
+  return gulp.src('app/assets/js/index.js')
              .pipe(plumber({ errorHandler: handleError }))
              .pipe(webpack(configuration.webpack))
-             .pipe(gulp.dest(target));
-};
-
-var ecs_bundle = function(cb) {
-  return javascriptBundleFor('ecs/index.js', 'ecs-dist')
-};
-
-var app_bundle = function(cb) {
-  return javascriptBundleFor('app/assets/js/index.js', 'dist/js');
-};
+             .pipe(gulp.dest('dist/js'));
+});
 
 // These must be sequentially ran
-gulp.task('javascript_bundle', function(){
-  ecs_bundle();
-  app_bundle();
+gulp.task('javascript_bundle', function() {
+  gulp.start('ecs_bundle');
+  gulp.start('app_bundle');
 });
 
 gulp.task('haml', function () {
